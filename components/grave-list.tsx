@@ -7,6 +7,7 @@ import type { GraveData } from "@/components/grave-page" // Hergebruik de interf
 import Image from "next/image"
 import Link from "next/link"
 import { MapPin, CalendarDays } from "lucide-react"
+import { Label } from "@/components/ui/label"
 
 interface GraveListProps {
   initialGraves: GraveData[]
@@ -39,22 +40,28 @@ export default function GraveList({ initialGraves }: GraveListProps) {
 
   return (
     <div className="grid gap-6">
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <Input
-          type="text"
-          placeholder="Zoek op naam, biografie of locatie..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="flex-grow"
-        />
-        {/* Toekomstige filteropties kunnen hier komen, bijv. een Select component voor gemeenten */}
-        {/* <Input
-          type="text"
-          placeholder="Filter op begraafplaats..."
-          value={filterLocation}
-          onChange={(e) => setFilterLocation(e.target.value)}
-          className="md:w-1/3"
-        /> */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
+        <div className="grid gap-2">
+          <Label htmlFor="searchTerm">Zoek op naam, biografie of locatie</Label>
+          <Input
+            id="searchTerm"
+            type="text"
+            placeholder="Bijv. Anna Maria, tuinier, Rusthof..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="filterLocation">Filter op begraafplaats/locatie</Label>
+          <Input
+            id="filterLocation"
+            type="text"
+            placeholder="Bijv. Utrecht, Vak C..."
+            value={filterLocation}
+            onChange={(e) => setFilterLocation(e.target.value)}
+          />
+        </div>
+        {/* Add more filter options here if needed, e.g., a dropdown for specific cities */}
       </div>
 
       {filteredGraves.length === 0 ? (

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { createBrowserClient } from "@/lib/supabase-browser"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,6 +16,7 @@ export default function AddGravePage() {
   const supabase = createBrowserClient()
   const router = useRouter()
   const { toast } = useToast()
+  const [supabaseInitialized, setSupabaseInitialized] = useState(false)
 
   const [name, setName] = useState("")
   const [birthDate, setBirthDate] = useState("")
@@ -25,6 +26,21 @@ export default function AddGravePage() {
   const [deceasedPhoto, setDeceasedPhoto] = useState<File | null>(null)
   const [locationDescription, setLocationDescription] = useState("")
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (supabase) {
+      setSupabaseInitialized(true)
+    } else {
+      toast({
+        title: "Configuratie fout",
+        description:
+          "Supabase is niet correct geconfigureerd. Zorg ervoor dat NEXT_PUBLIC_SUPABASE_URL en NEXT_PUBLIC_SUPABASE_ANON_KEY zijn ingesteld.",
+        variant: "destructive",
+        duration: 8000,
+      })
+      setLoading(false) // Stop loading if Supabase is not initialized
+    }
+  }, [supabase, toast])
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -37,6 +53,14 @@ export default function AddGravePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!supabaseInitialized) {
+      toast({
+        title: "Fout",
+        description: "Kan geen graf toevoegen: Supabase is niet geïnitialiseerd.",
+        variant: "destructive",
+      })
+      return
+    }
     setLoading(true)
 
     const {
@@ -186,7 +210,7 @@ export default function AddGravePage() {
                 {deceasedPhoto && <p className="text-sm text-gray-500">{deceasedPhoto.name}</p>}
               </div>
             </div>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading || !supabaseInitialized}>
               {loading ? "Bezig met toevoegen..." : "Graf toevoegen"}
             </Button>
           </form>
