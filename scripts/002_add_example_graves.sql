@@ -7,7 +7,7 @@
 -- (In een echte situatie zouden deze graven door echte gebruikers worden toegevoegd)
 INSERT INTO auth.users (id, email, created_at, updated_at, email_confirmed_at)
 VALUES 
-  ('00000000-0000-0000-0000-000000000001', 'demo@grafvinder.nl', now(), now(), now())
+  ('00000000-0000-0000-0000-000000000001', 'graf-vinder.vercel.app', now(), now(), now())
 ON CONFLICT (id) DO NOTHING;
 
 -- Voeg voorbeeldgraf 2 toe
