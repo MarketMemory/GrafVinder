@@ -72,11 +72,23 @@ export default function Header() {
           <Link href="/graves" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50">
             Alle Graven
           </Link>
+          <Link href="/about" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50">
+            Over Ons
+          </Link>
+          <Link href="/donate" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50">
+            Doneren
+          </Link>
         </nav>
       ) : (
         <nav className="flex items-center gap-4">
           <Link href="/graves" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50">
             Alle Graven
+          </Link>
+          <Link href="/about" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50">
+            Over Ons
+          </Link>
+          <Link href="/donate" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50">
+            Doneren
           </Link>
           {loading ? (
             <div className="w-20 h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
