@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
-import { AlertCircle, CheckCircle, AlertTriangle } from "lucide-react"
+import { AlertCircle, CheckCircle } from "lucide-react"
 
 export default function AddGravePage() {
   const supabase = createBrowserClient()
@@ -77,14 +77,6 @@ export default function AddGravePage() {
 
       if (uploadError) {
         addDebugInfo(`Upload fout: ${uploadError.message}`)
-
-        // Specifieke foutmelding voor ontbrekende bucket
-        if (uploadError.message.includes("Bucket not found")) {
-          throw new Error(
-            `Storage bucket '${bucketName}' bestaat niet. Maak deze aan in je Supabase dashboard onder Storage.`,
-          )
-        }
-
         throw new Error(`Upload naar ${bucketName} mislukt: ${uploadError.message}`)
       }
 
@@ -146,13 +138,8 @@ export default function AddGravePage() {
         try {
           gravePhotoUrl = await uploadFileToStorage(gravePhoto, "grave-photos", user.id)
         } catch (error: any) {
-          // Als de upload faalt, ga door zonder foto maar waarschuw de gebruiker
-          addDebugInfo(`Grafoto upload gefaald, doorgaan zonder foto: ${error.message}`)
-          toast({
-            title: "Waarschuwing",
-            description: `Grafoto kon niet worden geüpload: ${error.message}. Graf wordt toegevoegd zonder foto.`,
-            variant: "destructive",
-          })
+          addDebugInfo(`Grafoto upload gefaald: ${error.message}`)
+          throw error // Stop het proces als foto upload faalt
         }
       } else {
         addDebugInfo("Geen grafoto geselecteerd")
@@ -163,13 +150,8 @@ export default function AddGravePage() {
         try {
           deceasedPhotoUrl = await uploadFileToStorage(deceasedPhoto, "deceased-photos", user.id)
         } catch (error: any) {
-          // Als de upload faalt, ga door zonder foto maar waarschuw de gebruiker
-          addDebugInfo(`Overledene foto upload gefaald, doorgaan zonder foto: ${error.message}`)
-          toast({
-            title: "Waarschuwing",
-            description: `Overledene foto kon niet worden geüpload: ${error.message}. Graf wordt toegevoegd zonder foto.`,
-            variant: "destructive",
-          })
+          addDebugInfo(`Overledene foto upload gefaald: ${error.message}`)
+          throw error // Stop het proces als foto upload faalt
         }
       } else {
         addDebugInfo("Geen overledene foto geselecteerd")
@@ -229,22 +211,6 @@ export default function AddGravePage() {
           <CardTitle className="text-2xl font-bold">Voeg een nieuw graf toe aan GrafVinder</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Waarschuwing over storage buckets */}
-          <Card className="mb-6 bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <p className="font-medium text-yellow-800 dark:text-yellow-200 mb-1">Storage configuratie vereist</p>
-                  <p className="text-yellow-700 dark:text-yellow-300">
-                    Voor foto-uploads moeten de buckets 'grave-photos' en 'deceased-photos' bestaan in je Supabase
-                    Storage. Als deze niet bestaan, wordt het graf toegevoegd zonder foto's.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           <form onSubmit={handleSubmit} className="grid gap-6">
             <div className="grid gap-2">
               <Label htmlFor="name">Naam overledene *</Label>

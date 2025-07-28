@@ -1,43 +1,92 @@
-import GravePage, { type GraveData } from "@/components/grave-page"
+import { createServerClient } from "@/lib/supabase"
 import DonationBanner from "@/components/donation-banner"
+import GraveList from "@/components/grave-list"
+import type { GraveData } from "@/components/grave-page"
 
-export default function Home() {
-  // Mock-data om de pagina te demonstreren
-  const mock: GraveData = {
-    id: "mock-id-123",
-    name: "Anna Maria van der Velde",
-    birthDate: "12 mei 1930",
-    deathDate: "20 maart 2020",
-    biography:
-      "Anna Maria van der Velde, geboren in een klein dorpje in Drenthe, was een geliefde lerares die generaties lang heeft geïnspireerd met haar passie voor geschiedenis. Naast haar werk was ze een fervent tuinier en stond ze bekend om haar prachtige rozen. Ze was een actieve vrijwilliger in de lokale gemeenschap en zette zich in voor het behoud van historische gebouwen. Haar warme persoonlijkheid en wijsheid zullen door velen gemist worden.",
-    gravePhotoUrl: "/placeholder.svg?height=160&width=160",
-    deceasedPhotoUrl: "/placeholder.svg?height=160&width=160",
-    location: {
-      latitude: 52.0907,
-      longitude: 5.1214,
-      description: "Begraafplaats Rusthof, Utrecht, Vak C, Rij 12, Graf 5",
-    },
-    memories: [
-      {
-        id: "1",
-        text: "Tante Anna was altijd zo lief en had de beste verhalen over vroeger. Ik mis haar humor.",
-        date: "10 april 2020",
-        author: "Neef Jan",
+export const revalidate = 0 // Zorgt ervoor dat de data altijd vers is bij elke request
+
+export default async function Home() {
+  const supabase = createServerClient()
+
+  // Haal de meest recente graven op uit de database
+  const { data: graves, error } = await supabase
+    .from("graves")
+    .select("*")
+    .order("created_at", { ascending: false }) // Sorteer op aanmaakdatum (nieuwste eerst)
+    .limit(6) // Toon alleen de 6 meest recente graven
+
+  let formattedGraves: GraveData[] = []
+
+  if (!error && graves) {
+    // Pas de data aan naar de GraveData interface
+    formattedGraves = graves.map((grave) => ({
+      id: grave.id,
+      name: grave.name,
+      birthDate: grave.birth_date,
+      deathDate: grave.death_date,
+      biography: grave.biography || "",
+      gravePhotoUrl: grave.grave_photo_url || "/placeholder.svg?height=160&width=160",
+      deceasedPhotoUrl: grave.deceased_photo_url || "/placeholder.svg?height=160&width=160",
+      location: {
+        latitude: grave.location_latitude || 0,
+        longitude: grave.location_longitude || 0,
+        description: grave.location_description || "Onbekende locatie",
       },
-      {
-        id: "2",
-        text: "Haar lessen waren nooit saai. Ze maakte geschiedenis levend. Een inspiratie voor mij om zelf leraar te worden.",
-        date: "15 mei 2020",
-        author: "Oud-leerling Sarah",
-      },
-    ],
+      memories: [], // Herinneringen worden hier niet geladen
+    }))
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
-      <div className="container mx-auto px-4">
+    <main className="flex min-h-screen flex-col bg-gray-100 dark:bg-gray-900">
+      <div className="container mx-auto px-4 py-8">
         <DonationBanner />
-        <GravePage data={mock} />
+
+        {/* Hero Section */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-gray-50 mb-4">Welkom bij GrafVinder</h1>
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-8">
+            Een gratis platform om herinneringen te delen en geliefden te herdenken. Ontdek verhalen, deel herinneringen
+            en eer het leven van degenen die ons dierbaar zijn.
+          </p>
+        </div>
+
+        {/* Recent Graves Section */}
+        {formattedGraves.length > 0 && (
+          <div className="mb-12">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-50">Recent Toegevoegde Graven</h2>
+              <a
+                href="/graves"
+                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+              >
+                Bekijk alle graven →
+              </a>
+            </div>
+            <GraveList initialGraves={formattedGraves} />
+          </div>
+        )}
+
+        {/* Call to Action */}
+        <div className="text-center bg-white dark:bg-gray-800 rounded-lg p-8 shadow-lg">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-50 mb-4">Deel jouw verhaal</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Help anderen door het verhaal van jouw geliefde te delen. Elke herinnering telt.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="/add-grave"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              Graf Toevoegen
+            </a>
+            <a
+              href="/graves"
+              className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              Graven Bekijken
+            </a>
+          </div>
+        </div>
       </div>
     </main>
   )

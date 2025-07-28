@@ -26,12 +26,13 @@ export default async function GravesOverviewPage() {
   // De database kolommen gebruiken snake_case, de interface camelCase.
   // We moeten dit hier omzetten voor de client component.
   const formattedGraves: GraveData[] = graves.map((grave) => ({
+    id: grave.id, // Voeg ID toe voor de links
     name: grave.name,
     birthDate: grave.birth_date,
     deathDate: grave.death_date,
     biography: grave.biography || "",
     gravePhotoUrl: grave.grave_photo_url || "/placeholder.svg?height=160&width=160",
-    // deceasedPhotoUrl: grave.deceased_photo_url || "/placeholder.svg?height=160&width=160", // Voeg deze toe als je hem in GraveData hebt
+    deceasedPhotoUrl: grave.deceased_photo_url || "/placeholder.svg?height=160&width=160", // Voeg deze toe
     location: {
       latitude: grave.location_latitude || 0,
       longitude: grave.location_longitude || 0,
@@ -44,7 +45,7 @@ export default async function GravesOverviewPage() {
     <main className="flex min-h-screen flex-col items-center bg-gray-100 dark:bg-gray-900 py-8">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <h1 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-gray-50">Alle Graven</h1>
-        <GraveList initialGraves={formattedGraves} />
+        <GraveList initialGraves={formattedGraves} showFilters={true} />
       </div>
     </main>
   )

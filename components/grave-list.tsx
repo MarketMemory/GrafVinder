@@ -11,11 +11,12 @@ import { Label } from "@/components/ui/label"
 
 interface GraveListProps {
   initialGraves: GraveData[]
+  showFilters?: boolean // Optioneel: toon filters (standaard true)
 }
 
-export default function GraveList({ initialGraves }: GraveListProps) {
+export default function GraveList({ initialGraves, showFilters = true }: GraveListProps) {
   const [searchTerm, setSearchTerm] = useState("")
-  const [filterLocation, setFilterLocation] = useState("") // Voor een toekomstige filter op locatie
+  const [filterLocation, setFilterLocation] = useState("")
 
   const filteredGraves = useMemo(() => {
     let filtered = initialGraves
@@ -40,38 +41,39 @@ export default function GraveList({ initialGraves }: GraveListProps) {
 
   return (
     <div className="grid gap-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
-        <div className="grid gap-2">
-          <Label htmlFor="searchTerm">Zoek op naam, biografie of locatie</Label>
-          <Input
-            id="searchTerm"
-            type="text"
-            placeholder="Bijv. Anna Maria, tuinier, Rusthof..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      {/* Filters - alleen tonen als showFilters true is */}
+      {showFilters && (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
+          <div className="grid gap-2">
+            <Label htmlFor="searchTerm">Zoek op naam, biografie of locatie</Label>
+            <Input
+              id="searchTerm"
+              type="text"
+              placeholder="Bijv. Anna Maria, tuinier, Rusthof..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="filterLocation">Filter op begraafplaats/locatie</Label>
+            <Input
+              id="filterLocation"
+              type="text"
+              placeholder="Bijv. Utrecht, Vak C..."
+              value={filterLocation}
+              onChange={(e) => setFilterLocation(e.target.value)}
+            />
+          </div>
         </div>
-        <div className="grid gap-2">
-          <Label htmlFor="filterLocation">Filter op begraafplaats/locatie</Label>
-          <Input
-            id="filterLocation"
-            type="text"
-            placeholder="Bijv. Utrecht, Vak C..."
-            value={filterLocation}
-            onChange={(e) => setFilterLocation(e.target.value)}
-          />
-        </div>
-        {/* Add more filter options here if needed, e.g., a dropdown for specific cities */}
-      </div>
+      )}
 
       {filteredGraves.length === 0 ? (
         <p className="text-center text-gray-600 dark:text-gray-400">
-          Geen graven gevonden die voldoen aan de zoekcriteria.
+          {showFilters ? "Geen graven gevonden die voldoen aan de zoekcriteria." : "Nog geen graven toegevoegd."}
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredGraves.map((grave) => (
-            // Link nu naar de unieke ID van het graf
             <Link href={`/graves/${grave.id}`} key={grave.id} className="block">
               <Card className="h-full flex flex-col hover:shadow-xl transition-shadow duration-200">
                 <div className="relative w-full h-48 bg-gray-200 rounded-t-lg overflow-hidden">
