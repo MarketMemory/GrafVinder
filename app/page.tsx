@@ -8,6 +8,15 @@ export const revalidate = 0 // Zorgt ervoor dat de data altijd vers is bij elke 
 export default async function Home() {
   const supabase = createServerClient()
 
+  // Haal de instelling voor de donatiebanner op
+  const { data: bannerSetting, error: settingError } = await supabase
+    .from("app_settings")
+    .select("setting_value")
+    .eq("setting_name", "show_donation_banner")
+    .single()
+
+  const showDonationBanner = bannerSetting?.setting_value === "true" && !settingError
+
   // Haal de meest recente graven op uit de database
   const { data: graves, error } = await supabase
     .from("graves")
@@ -39,8 +48,7 @@ export default async function Home() {
   return (
     <main className="flex min-h-screen flex-col bg-gray-100 dark:bg-gray-900">
       <div className="container mx-auto px-4 py-8">
-        <DonationBanner />
-
+        {showDonationBanner && <DonationBanner />} {/* Conditioneel renderen */}
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-gray-50 mb-4">
@@ -51,7 +59,6 @@ export default async function Home() {
             in Nederland. Ontdek verhalen, deel herinneringen en eer het leven van degenen die ons dierbaar zijn.
           </p>
         </div>
-
         {/* Recent Graves Section */}
         {formattedGraves.length > 0 && (
           <div className="mb-12">
@@ -67,7 +74,6 @@ export default async function Home() {
             <GraveList initialGraves={formattedGraves} />
           </div>
         )}
-
         {/* Call to Action */}
         <div className="text-center bg-white dark:bg-gray-800 rounded-lg p-8 shadow-lg">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-50 mb-4">Deel jouw verhaal</h2>

@@ -106,6 +106,27 @@ export interface Database {
           },
         ]
       }
+      app_settings: {
+        Row: {
+          id: string
+          created_at: string
+          setting_name: string
+          setting_value: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          setting_name: string
+          setting_value: string
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          setting_name?: string
+          setting_value?: string
+        }
+        Relationships: []
+      }
       // Supabase heeft standaard een 'users' tabel voor authenticatie
       users: {
         Row: {
