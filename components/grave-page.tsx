@@ -1,24 +1,24 @@
 "use client" // Maak deze component een Client Component om Dialog te kunnen gebruiken
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar" // Avatar component teruggeplaatst
 import { Button } from "@/components/ui/button"
-import { MapPin, CalendarDays, BookOpen, Plus, ExternalLink, Edit } from "lucide-react" // Importeer Edit icon
+import { MapPin, CalendarDays, BookOpen, Plus, ExternalLink, Edit } from "lucide-react"
 import Image from "next/image"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import AddMemoryForm from "./add-memory-form"
-import EditMemoryForm from "./edit-memory-form" // Importeer het nieuwe bewerkingsformulier
+import EditMemoryForm from "./edit-memory-form"
 import { useState } from "react"
-import { formatDateRange } from "@/lib/date-utils" // Importeer de nieuwe utility
+import { formatDateRange } from "@/lib/date-utils"
 
 export interface GraveData {
-  id: string // Voeg ID toe voor unieke identificatie
+  id: string
   name: string
   birthDate: string
   deathDate: string
   biography: string
-  gravePhotoUrl: string | null // Kan null zijn
-  deceasedPhotoUrl: string | null // Nieuw: URL voor foto van de overledene
+  gravePhotoUrl: string | null
+  deceasedPhotoUrl: string | null
   location: {
     latitude: number
     longitude: number
@@ -36,14 +36,6 @@ interface GravePageProps {
   data: GraveData
 }
 
-/**
- * Een overzichtelijke grafpagina met:
- *  - foto van het graf
- *  - basisgegevens
- *  - biografie
- *  - locatie (placeholder-kaart)
- *  - herinneringen
- */
 const GravePage = ({ data }: GravePageProps) => {
   const [isAddMemoryDialogOpen, setIsAddMemoryDialogOpen] = useState(false)
   const [editingMemory, setEditingMemory] = useState<GraveData["memories"][0] | null>(null)
@@ -62,8 +54,13 @@ const GravePage = ({ data }: GravePageProps) => {
         {/* Header */}
         <CardHeader className="flex flex-col items-center text-center p-6 md:p-8">
           {data.deceasedPhotoUrl && (
-            <Avatar className="w-32 h-32 md:w-40 md:h-40 mb-4 border-4 border-gray-200 shadow-md">
-              <AvatarImage src={data.deceasedPhotoUrl || "/placeholder.svg"} alt={`Foto van ${data.name}`} />
+            <Avatar className="w-36 h-36 md:w-48 md:h-48 mb-4 border-4 border-gray-200 shadow-md">
+              {" "}
+              {/* Afmetingen vergroot */}
+              <AvatarImage
+                src={data.deceasedPhotoUrl || "/placeholder.svg?height=192&width=192&query=deceased%20person"}
+                alt={`Foto van ${data.name}`}
+              />
               <AvatarFallback>
                 {data.name
                   .split(" ")
@@ -97,8 +94,6 @@ const GravePage = ({ data }: GravePageProps) => {
                 Foto van het graf
               </h2>
               <div className="relative w-full aspect-square bg-transparent rounded-lg overflow-hidden">
-                {" "}
-                {/* Aangepast: h-64 naar h-[400px] */}
                 <Image
                   src={data.gravePhotoUrl || "/placeholder.svg?height=256&width=600&query=grave%20photo"}
                   alt={`Foto van het graf van ${data.name}`}
@@ -128,7 +123,7 @@ const GravePage = ({ data }: GravePageProps) => {
 
             <div className="relative w-full h-64 bg-gray-200 rounded-lg overflow-hidden">
               <Image
-                src="/images/grafzoeker-map.png" // Gebruik de geüploade afbeelding
+                src="/images/grafzoeker-map.png"
                 alt="Kaart van de graflocatie via Grafzoeker.nl"
                 fill
                 className="object-cover"
