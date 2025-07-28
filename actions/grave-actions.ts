@@ -139,10 +139,12 @@ export async function addMemory(formData: FormData) {
       }
     }
 
+    console.log("[addMemory Server Action] Calling supabase.auth.getUser()...")
     const {
       data: { user },
       error: userError,
     } = await supabase.auth.getUser() // Dit is de lijn die de fout veroorzaakt.
+    console.log("[addMemory Server Action] supabase.auth.getUser() call completed.")
 
     // Log de userError als deze bestaat, maar gooi GEEN fout als het alleen een ontbrekende sessie is.
     // De `user` variabele zal correct `null` zijn als er geen sessie is, wat wordt afgehandeld door `user?.id || null`.

@@ -9,7 +9,27 @@ let supabaseInstance: SupabaseClient<Database> | null = null
 // Functie om een Supabase client te maken voor Server Components en Server Actions
 // Deze client beheert de sessie via Next.js cookies.
 export const createClient = () => {
-  const cookieStore = cookies()
+  console.log("[Server Supabase Client] Entering createClient function.")
+
+  let cookieStore: ReturnType<typeof cookies> | null = null
+  try {
+    cookieStore = cookies()
+    console.log(
+      `[Server Supabase Client] cookies() called. cookieStore is: ${cookieStore ? "Defined" : "Undefined/Null"}`,
+    )
+    if (cookieStore && typeof cookieStore.get !== "function") {
+      console.error("[Server Supabase Client] CRITICAL: cookieStore.get is NOT a function!")
+    }
+  } catch (e: any) {
+    console.error(`[Server Supabase Client] ERROR calling cookies(): ${e.message}`)
+    throw new Error(`Failed to get cookie store: ${e.message}`)
+  }
+
+  if (!cookieStore) {
+    const errorMessage = "cookieStore is null after calling cookies(). Cannot proceed with Supabase client creation."
+    console.error(`[Server Supabase Client] CRITICAL ERROR: ${errorMessage}`)
+    throw new Error(errorMessage)
+  }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -31,11 +51,19 @@ export const createClient = () => {
     const client = createSupabaseServerClient<Database>(supabaseUrl, supabaseAnonKey, {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name)?.value
+          try {
+            const value = cookieStore?.get(name)?.value
+            console.log(`[Server Supabase Client] Cookie get('${name}'): ${value ? "Found" : "Not Found"}`)
+            return value
+          } catch (e: any) {
+            console.error(`[Server Supabase Client] ERROR in cookie get('${name}'): ${e.message}`)
+            throw e // Re-throw to propagate the error
+          }
         },
         set(name: string, value: string, options: any) {
           try {
-            cookieStore.set({ name, value, ...options })
+            cookieStore?.set({ name, value, ...options })
+            console.log(`[Server Supabase Client] Cookie set('${name}'): Success`)
           } catch (error) {
             // The `cookies().set()` method can only be called in a Server Component or Server Action.
             // This error is safe to ignore if you're only calling `cookies().set()` in a Server Action
@@ -45,7 +73,8 @@ export const createClient = () => {
         },
         remove(name: string, options: any) {
           try {
-            cookieStore.set({ name, value: "", ...options })
+            cookieStore?.set({ name, value: "", ...options })
+            console.log(`[Server Supabase Client] Cookie remove('${name}'): Success`)
           } catch (error) {
             // The `cookies().set()` method can only be called in a Server Component or Server Action.
             // This error is safe to ignore if you're only calling `cookies().set()` in a Server Action
