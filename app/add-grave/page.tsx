@@ -38,7 +38,7 @@ export default function AddGravePage() {
   useEffect(() => {
     if (supabase) {
       setSupabaseInitialized(true)
-      addDebugInfo("Supabase client geïnitialiseerd")
+      addDebugInfo("Supabase client geïnitialiseerd (singleton)")
     } else {
       addDebugInfo("Supabase client NIET geïnitialiseerd - controleer environment variables")
       toast({
@@ -65,7 +65,7 @@ export default function AddGravePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!supabaseInitialized) {
+    if (!supabaseInitialized || !supabase) {
       toast({
         title: "Fout",
         description: "Kan geen graf toevoegen: Supabase is niet geïnitialiseerd.",

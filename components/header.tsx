@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { createBrowserClient } from "@/lib/supabase-browser"
+import { createBrowserClient, resetSupabaseInstance } from "@/lib/supabase-browser"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { useEffect, useState } from "react"
@@ -11,7 +11,7 @@ import type { User } from "@supabase/supabase-js"
 export default function Header() {
   const supabase = createBrowserClient()
   const router = useRouter()
-  const { toast } = useToast() // Use the toast function from the hook
+  const { toast } = useToast()
 
   // State
   const [user, setUser] = useState<User | null>(null)
@@ -44,8 +44,11 @@ export default function Header() {
   }, [supabase])
 
   const handleSignOut = async () => {
+    if (!supabase) return
+
     setLoading(true)
     const { error } = await supabase.auth.signOut()
+
     if (error) {
       toast({
         title: "Fout bij uitloggen",
@@ -53,11 +56,13 @@ export default function Header() {
         variant: "destructive",
       })
     } else {
+      // Reset the singleton instance after logout
+      resetSupabaseInstance()
       toast({
         title: "Succesvol uitgelogd",
         description: "Je bent nu uitgelogd bij GrafVinder.",
       })
-      router.push("/auth") // Stuur door naar de inlogpagina
+      router.push("/auth")
     }
     setLoading(false)
   }
