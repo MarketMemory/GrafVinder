@@ -43,10 +43,12 @@ export default async function Home() {
 
         {/* Hero Section */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-gray-50 mb-4">Welkom bij GrafVinder</h1>
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-gray-50 mb-4">
+            GrafVinder - Vind eenvoudig graven in Nederland
+          </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-8">
-            Een gratis platform om herinneringen te delen en geliefden te herdenken. Ontdek verhalen, deel herinneringen
-            en eer het leven van degenen die ons dierbaar zijn.
+            GrafVinder helpt je om graven van overleden dierbaren snel en gemakkelijk terug te vinden op begraafplaatsen
+            in Nederland. Ontdek verhalen, deel herinneringen en eer het leven van degenen die ons dierbaar zijn.
           </p>
         </div>
 
