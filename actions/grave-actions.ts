@@ -108,22 +108,23 @@ export async function deleteGrave(graveId: string) {
 
 // Functie om een herinnering toe te voegen
 export async function addMemory(formData: FormData) {
-  const supabase = createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  // Herinneringen kunnen ook anoniem worden toegevoegd, dus user_id is optioneel
-  const graveId = formData.get("graveId") as string
-  const text = formData.get("text") as string
-  const author = formData.get("author") as string
-
-  if (!graveId || !text || !author) {
-    return { success: false, message: "Alle velden zijn verplicht." }
-  }
-
   try {
+    const supabase = createClient() // Dit is de server client
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    // Herinneringen kunnen ook anoniem worden toegevoegd, dus user_id is optioneel
+    const graveId = formData.get("graveId") as string
+    const text = formData.get("text") as string
+    const author = formData.get("author") as string
+
+    if (!graveId || !text || !author) {
+      console.error("Validation Error: Missing graveId, text, or author for addMemory.")
+      return { success: false, message: "Alle velden zijn verplicht." }
+    }
+
     const { error } = await supabase.from("memories").insert({
       grave_id: graveId,
       text,
@@ -132,12 +133,15 @@ export async function addMemory(formData: FormData) {
       user_id: user?.id || null, // Koppel aan gebruiker als ingelogd
     })
 
-    if (error) throw error
+    if (error) {
+      console.error("Supabase Insert Error in addMemory:", error)
+      throw error // Gooi de fout opnieuw om te worden opgevangen door de buitenste catch
+    }
 
     revalidatePath(`/graves/${graveId}`) // Herlaad de detailpagina om de nieuwe herinnering te tonen
     return { success: true, message: "Herinnering succesvol toegevoegd!" }
   } catch (error: any) {
-    console.error("Fout bij toevoegen herinnering:", error)
+    console.error("Caught error in addMemory Server Action:", error)
     return {
       success: false,
       message: error.message || "Er is een onbekende fout opgetreden bij het toevoegen van de herinnering.",
