@@ -52,7 +52,7 @@ const GravePage = ({ data }: GravePageProps) => {
   // Genereer de URL voor het delen op X/Twitter
   const shareUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://grafvinder.vercel.app"}/graves/${data.id}`
   const tweetText = encodeURIComponent(
-    `Herdenk ${data.name} (${formatDateRange(data.birthDate, data.deathDate)}) op GrafVinder.nl. Lees het levensverhaal en deel herinneringen:`,
+    `Herdenk ${data.name} (${formatDateRange(data.birthDate, data.deathDate)}) op GrafVinder.vercel.app. Lees het levensverhaal en deel herinneringen:`,
   )
   const twitterShareLink = `https://twitter.com/intent/tweet?text=${tweetText}&url=${encodeURIComponent(shareUrl)}&hashtags=GrafVinder,Herdenken`
 

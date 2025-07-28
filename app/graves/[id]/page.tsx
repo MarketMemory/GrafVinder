@@ -1,13 +1,72 @@
 import { createServerClient } from "@/lib/supabase"
 import { redirect } from "next/navigation"
-import GravePage from "@/components/grave-page" // Importeer de GravePage component
+import GravePage from "@/components/grave-page"
 import type { GraveData } from "@/components/grave-page"
+import type { Metadata } from "next"
 
 export const revalidate = 0 // Zorgt ervoor dat de data altijd vers is
 
 interface GraveDetailPageProps {
   params: {
     id: string // Het ID van het graf uit de URL
+  }
+}
+
+// Functie om dynamische metadata te genereren
+export async function generateMetadata({ params }: GraveDetailPageProps): Promise<Metadata> {
+  const supabase = createServerClient()
+
+  const { data: grave, error } = await supabase.from("graves").select("*").eq("id", params.id).single()
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://grafvinder.vercel.app"
+  const graveUrl = `${siteUrl}/graves/${params.id}`
+
+  if (error || !grave) {
+    // Fallback metadata als het graf niet gevonden wordt
+    return {
+      title: "Graf niet gevonden - GrafVinder",
+      description: "Dit graf kon niet worden gevonden op GrafVinder.",
+      openGraph: {
+        url: siteUrl,
+        images: [`${siteUrl}/favicon.png`],
+      },
+      twitter: {
+        images: [`${siteUrl}/favicon.png`],
+      },
+    }
+  }
+
+  const title = `${grave.name} (${grave.birth_date} – ${grave.death_date}) - GrafVinder`
+  const description =
+    grave.biography || `Herdenk ${grave.name} op GrafVinder. Lees het levensverhaal en deel herinneringen.`
+  const imageUrl = grave.grave_photo_url || `${siteUrl}/placeholder.svg?height=630&width=1200&query=grave%20photo`
+
+  return {
+    title: title,
+    description: description,
+    openGraph: {
+      title: title,
+      description: description,
+      url: graveUrl,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200, // Standaard breedte voor Open Graph afbeeldingen
+          height: 630, // Standaard hoogte voor Open Graph afbeeldingen
+          alt: `Foto van het graf van ${grave.name}`,
+        },
+      ],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: title,
+      description: description,
+      images: [imageUrl],
+    },
+    alternates: {
+      canonical: graveUrl,
+    },
   }
 }
 
