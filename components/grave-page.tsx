@@ -126,8 +126,8 @@ const GravePage = ({ data }: GravePageProps) => {
 
             <div className="relative w-full h-64 bg-gray-200 rounded-lg overflow-hidden">
               <Image
-                src={`/placeholder.svg?height=256&width=600&query=map%20of%20the%20Netherlands%20with%20a%20pin`}
-                alt="Kaart van de graflocatie"
+                src="/images/grafzoeker-map.png" // Gebruik de geüploade afbeelding
+                alt="Kaart van de graflocatie via Grafzoeker.nl"
                 fill
                 className="object-cover"
               />
