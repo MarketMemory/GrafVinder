@@ -96,12 +96,14 @@ const GravePage = ({ data }: GravePageProps) => {
                 />
                 Foto van het graf
               </h2>
-              <div className="relative w-full h-64 bg-gray-200 rounded-lg overflow-hidden">
+              <div className="relative w-full aspect-square bg-transparent rounded-lg overflow-hidden">
+                {" "}
+                {/* Aangepast: h-64 naar h-[400px] */}
                 <Image
                   src={data.gravePhotoUrl || "/placeholder.svg?height=256&width=600&query=grave%20photo"}
                   alt={`Foto van het graf van ${data.name}`}
                   fill
-                  className="object-cover"
+                  className="object-contain"
                 />
               </div>
             </section>
