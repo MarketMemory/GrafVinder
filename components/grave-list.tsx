@@ -77,12 +77,14 @@ export default function GraveList({ initialGraves, showFilters = true }: GraveLi
           {filteredGraves.map((grave) => (
             <Link href={`/graves/${grave.id}`} key={grave.id} className="block">
               <Card className="h-full flex flex-col hover:shadow-xl transition-shadow duration-200">
-                <div className="relative w-full h-48 bg-gray-200 rounded-t-lg overflow-hidden">
+                <div className="relative w-full h-48 bg-transparent rounded-t-lg overflow-hidden">
+                  {" "}
+                  {/* Aangepast: bg-gray-200 naar bg-transparent */}
                   <Image
                     src={grave.gravePhotoUrl || "/placeholder.svg?height=192&width=384&query=grave%20photo"}
                     alt={`Foto van het graf van ${grave.name}`}
                     fill
-                    className="object-cover"
+                    className="object-contain"
                   />
                 </div>
                 <CardHeader>
