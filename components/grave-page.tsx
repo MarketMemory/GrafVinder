@@ -1,9 +1,9 @@
 "use client" // Maak deze component een Client Component om Dialog te kunnen gebruiken
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar" // Avatar component teruggeplaatst
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { MapPin, CalendarDays, BookOpen, Plus, ExternalLink, Edit } from "lucide-react"
+import { MapPin, CalendarDays, BookOpen, Plus, ExternalLink, Edit, Twitter } from "lucide-react" // Importeer Twitter icon
 import Image from "next/image"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import AddMemoryForm from "./add-memory-form"
@@ -12,13 +12,13 @@ import { useState } from "react"
 import { formatDateRange } from "@/lib/date-utils"
 
 export interface GraveData {
-  id: string
+  id: string // Voeg ID toe voor unieke identificatie
   name: string
   birthDate: string
   deathDate: string
   biography: string
-  gravePhotoUrl: string | null
-  deceasedPhotoUrl: string | null
+  gravePhotoUrl: string | null // Kan null zijn
+  deceasedPhotoUrl: string | null // Nieuw: URL voor foto van de overledene
   location: {
     latitude: number
     longitude: number
@@ -30,6 +30,7 @@ export interface GraveData {
     date: string
     author: string
   }[]
+  shareOnTwitter?: boolean // NIEUW: Optioneel, voor weergave
 }
 
 interface GravePageProps {
@@ -48,6 +49,13 @@ const GravePage = ({ data }: GravePageProps) => {
     setEditingMemory(null)
   }
 
+  // Genereer de URL voor het delen op X/Twitter
+  const shareUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://grafvinder.vercel.app"}/graves/${data.id}`
+  const tweetText = encodeURIComponent(
+    `Herdenk ${data.name} (${formatDateRange(data.birthDate, data.deathDate)}) op GrafVinder.nl. Lees het levensverhaal en deel herinneringen:`,
+  )
+  const twitterShareLink = `https://twitter.com/intent/tweet?text=${tweetText}&url=${encodeURIComponent(shareUrl)}&hashtags=GrafVinder,Herdenken`
+
   return (
     <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8">
       <Card className="max-w-4xl mx-auto shadow-lg">
@@ -55,8 +63,6 @@ const GravePage = ({ data }: GravePageProps) => {
         <CardHeader className="flex flex-col items-center text-center p-6 md:p-8">
           {data.deceasedPhotoUrl && (
             <Avatar className="w-36 h-36 md:w-48 md:h-48 mb-4 border-4 border-gray-200 shadow-md">
-              {" "}
-              {/* Afmetingen vergroot */}
               <AvatarImage
                 src={data.deceasedPhotoUrl || "/placeholder.svg?height=192&width=192&query=deceased%20person"}
                 alt={`Foto van ${data.name}`}
@@ -76,6 +82,14 @@ const GravePage = ({ data }: GravePageProps) => {
             <CalendarDays className="w-5 h-5" />
             {formatDateRange(data.birthDate, data.deathDate)}
           </CardDescription>
+
+          {/* NIEUW: Deel op X/Twitter knop */}
+          <Button asChild variant="outline" className="mt-4 bg-transparent">
+            <a href={twitterShareLink} target="_blank" rel="noopener noreferrer">
+              <Twitter className="w-4 h-4 mr-2" />
+              Deel op X
+            </a>
+          </Button>
         </CardHeader>
 
         {/* Content */}

@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { AlertCircle, CheckCircle } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox" // Importeer Checkbox
 
 export default function AddGravePage() {
   const supabase = createBrowserClient()
@@ -26,6 +27,7 @@ export default function AddGravePage() {
   const [gravePhoto, setGravePhoto] = useState<File | null>(null)
   const [deceasedPhoto, setDeceasedPhoto] = useState<File | null>(null)
   const [locationDescription, setLocationDescription] = useState("")
+  const [shareOnTwitter, setShareOnTwitter] = useState(false) // NIEUW: state voor de checkbox
   const [loading, setLoading] = useState(false)
   const [debugInfo, setDebugInfo] = useState<string[]>([])
 
@@ -168,6 +170,7 @@ export default function AddGravePage() {
         deceased_photo_url: deceasedPhotoUrl,
         location_description: locationDescription || null,
         user_id: user.id,
+        share_on_twitter: shareOnTwitter, // NIEUW: voeg de checkbox waarde toe
       }
 
       addDebugInfo(`Grafgegevens: ${JSON.stringify(graveData, null, 2)}`)
@@ -279,6 +282,26 @@ export default function AddGravePage() {
                 {deceasedPhoto && <p className="text-sm text-gray-500">{deceasedPhoto.name}</p>}
               </div>
             </div>
+
+            {/* NIEUW: Checkbox voor delen op X/Twitter */}
+            <div className="flex items-center space-x-2 mt-4">
+              <Checkbox
+                id="shareOnTwitter"
+                checked={shareOnTwitter}
+                onCheckedChange={(checked) => setShareOnTwitter(checked as boolean)}
+                disabled={loading}
+              />
+              <Label
+                htmlFor="shareOnTwitter"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Toon op de tijdlijn van @GrafVinder (optioneel)
+              </Label>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Door dit aan te vinken, geef je toestemming dat GrafVinder dit graf handmatig kan delen op de officiële
+              X/Twitter tijdlijn.
+            </p>
 
             <Button type="submit" disabled={loading || !supabaseInitialized}>
               {loading ? (

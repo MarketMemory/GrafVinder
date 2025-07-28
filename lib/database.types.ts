@@ -19,6 +19,7 @@ export interface Database {
           location_longitude: number | null
           location_description: string | null
           user_id: string // De gebruiker die dit graf heeft toegevoegd/beheert
+          share_on_twitter: boolean // NIEUW: voor de X/Twitter deeloptie
         }
         Insert: {
           id?: string
@@ -33,6 +34,7 @@ export interface Database {
           location_longitude?: number | null
           location_description?: string | null
           user_id: string
+          share_on_twitter?: boolean // NIEUW: voor de X/Twitter deeloptie
         }
         Update: {
           id?: string
@@ -47,6 +49,7 @@ export interface Database {
           location_longitude?: number | null
           location_description?: string | null
           user_id?: string
+          share_on_twitter?: boolean // NIEUW: voor de X/Twitter deeloptie
         }
         Relationships: [
           {
