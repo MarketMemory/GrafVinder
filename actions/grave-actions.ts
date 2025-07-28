@@ -111,21 +111,34 @@ export async function addMemory(formData: FormData) {
   try {
     const supabase = createClient() // Dit is de server client
 
+    // Expliciete controle: Als supabase om een of andere reden null is, geef dan een fout terug.
+    if (!supabase) {
+      console.error("[addMemory Server Action] Supabase client is null after createClient().")
+      return { success: false, message: "Interne serverfout: Supabase client kon niet worden geïnitialiseerd." }
+    }
+
     const {
       data: { user },
+      error: userError,
     } = await supabase.auth.getUser()
 
-    // Herinneringen kunnen ook anoniem worden toegevoegd, dus user_id is optioneel
+    // Log de userError als deze bestaat, maar gooi GEEN fout als het alleen een ontbrekende sessie is.
+    // De `user` variabele zal correct `null` zijn als er geen sessie is, wat wordt afgehandeld door `user?.id || null`.
+    if (userError) {
+      console.warn("[addMemory Server Action] Warning fetching user (might be anonymous):", userError.message)
+      // Gooi hier GEEN fout, aangezien herinneringen anoniem kunnen zijn.
+    }
+
     const graveId = formData.get("graveId") as string
     const text = formData.get("text") as string
     const author = formData.get("author") as string
 
     if (!graveId || !text || !author) {
-      console.error("Validation Error: Missing graveId, text, or author for addMemory.")
+      console.error("[addMemory Server Action] Validation Error: Missing graveId, text, or author.")
       return { success: false, message: "Alle velden zijn verplicht." }
     }
 
-    const { error } = await supabase.from("memories").insert({
+    const { error: insertError } = await supabase.from("memories").insert({
       grave_id: graveId,
       text,
       author,
@@ -133,15 +146,15 @@ export async function addMemory(formData: FormData) {
       user_id: user?.id || null, // Koppel aan gebruiker als ingelogd
     })
 
-    if (error) {
-      console.error("Supabase Insert Error in addMemory:", error)
-      throw error // Gooi de fout opnieuw om te worden opgevangen door de buitenste catch
+    if (insertError) {
+      console.error("[addMemory Server Action] Supabase Insert Error:", insertError)
+      throw insertError // Gooi de fout opnieuw om te worden opgevangen door de buitenste catch
     }
 
     revalidatePath(`/graves/${graveId}`) // Herlaad de detailpagina om de nieuwe herinnering te tonen
     return { success: true, message: "Herinnering succesvol toegevoegd!" }
   } catch (error: any) {
-    console.error("Caught error in addMemory Server Action:", error)
+    console.error("[addMemory Server Action] Caught error:", error)
     return {
       success: false,
       message: error.message || "Er is een onbekende fout opgetreden bij het toevoegen van de herinnering.",

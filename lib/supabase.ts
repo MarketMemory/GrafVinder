@@ -14,38 +14,51 @@ export const createClient = () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+  console.log("[Server Supabase Client] Checking environment variables...")
+  console.log(`[Server Supabase Client] NEXT_PUBLIC_SUPABASE_URL: ${supabaseUrl ? "Set" : "Not Set"}`)
+  console.log(`[Server Supabase Client] NEXT_PUBLIC_SUPABASE_ANON_KEY: ${supabaseAnonKey ? "Set" : "Not Set"}`)
+
   if (!supabaseUrl || !supabaseAnonKey) {
-    // Gooi een specifieke fout als de omgevingsvariabelen ontbreken
-    throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY for server-side Supabase client. Please ensure these are set in your Vercel project environment variables.",
-    )
+    const errorMessage =
+      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY for server-side Supabase client. Please ensure these are set in your Vercel project environment variables."
+    console.error(`[Server Supabase Client] ERROR: ${errorMessage}`)
+    throw new Error(errorMessage)
   }
 
-  return createSupabaseServerClient<Database>(supabaseUrl, supabaseAnonKey, {
-    cookies: {
-      get(name: string) {
-        return cookieStore.get(name)?.value
+  try {
+    const client = createSupabaseServerClient<Database>(supabaseUrl, supabaseAnonKey, {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+        set(name: string, value: string, options: any) {
+          try {
+            cookieStore.set({ name, value, ...options })
+          } catch (error) {
+            // The `cookies().set()` method can only be called in a Server Component or Server Action.
+            // This error is safe to ignore if you're only calling `cookies().set()` in a Server Action
+            // or Server Component.
+            console.warn("[Server Supabase Client] Error setting cookie:", error)
+          }
+        },
+        remove(name: string, options: any) {
+          try {
+            cookieStore.set({ name, value: "", ...options })
+          } catch (error) {
+            // The `cookies().set()` method can only be called in a Server Component or Server Action.
+            // This error is safe to ignore if you're only calling `cookies().set()` in a Server Action
+            // or Server Component.
+            console.warn("[Server Supabase Client] Error removing cookie:", error)
+          }
+        },
       },
-      set(name: string, value: string, options: any) {
-        try {
-          cookieStore.set({ name, value, ...options })
-        } catch (error) {
-          // The `cookies().set()` method can only be called in a Server Component or Server Action.
-          // This error is safe to ignore if you're only calling `cookies().set()` in a Server Action
-          // or Server Component.
-        }
-      },
-      remove(name: string, options: any) {
-        try {
-          cookieStore.set({ name, value: "", ...options })
-        } catch (error) {
-          // The `cookies().set()` method can only be called in a Server Component or Server Action.
-          // This error is safe to ignore if you're only calling `cookies().set()` in a Server Action
-          // or Server Component.
-        }
-      },
-    },
-  })
+    })
+    console.log("[Server Supabase Client] Server Supabase client created successfully.")
+    return client
+  } catch (e) {
+    console.error("[Server Supabase Client] Error creating server Supabase client:", e)
+    throw e // Re-throw the error if client creation itself fails
+  }
 }
 
 // Functie om een Supabase client te maken voor Client Components
