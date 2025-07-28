@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import AddMemoryForm from "./add-memory-form"
 import EditMemoryForm from "./edit-memory-form" // Importeer het nieuwe bewerkingsformulier
 import { useState } from "react"
+import { formatDateRange } from "@/lib/date-utils" // Importeer de nieuwe utility
 
 export interface GraveData {
   id: string // Voeg ID toe voor unieke identificatie
@@ -76,7 +77,7 @@ const GravePage = ({ data }: GravePageProps) => {
 
           <CardDescription className="text-lg text-gray-600 dark:text-gray-400 flex items-center gap-2 mt-2">
             <CalendarDays className="w-5 h-5" />
-            {data.birthDate} – {data.deathDate}
+            {formatDateRange(data.birthDate, data.deathDate)}
           </CardDescription>
         </CardHeader>
 
@@ -154,7 +155,7 @@ const GravePage = ({ data }: GravePageProps) => {
               <div className="grid gap-4">
                 {data.memories.map((memory) => (
                   <Card key={memory.id} className="p-4 bg-gray-50 dark:bg-gray-800">
-                    <p className="italic text-gray-700 dark:text-gray-300 mb-2">“{memory.text}”</p>
+                    <p className="italic text-gray-700 dark:text-gray-300 mb-2">"{memory.text}"</p>
                     <div className="flex justify-between items-center">
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         — {memory.author}, {memory.date}

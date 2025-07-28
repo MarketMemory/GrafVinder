@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { deleteGrave } from "@/actions/grave-actions"
 import { useState } from "react"
+import { formatDateRange } from "@/lib/date-utils" // Importeer de nieuwe utility
 
 interface MyGraveCardProps {
   grave: GraveData & { id: string } // Zorg ervoor dat grave.id beschikbaar is
@@ -65,7 +66,7 @@ export default function MyGraveCard({ grave }: MyGraveCardProps) {
         <CardTitle className="text-xl font-semibold">{grave.name}</CardTitle>
         <CardDescription className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
           <CalendarDays className="w-4 h-4" />
-          {grave.birthDate} - {grave.deathDate}
+          {formatDateRange(grave.birthDate, grave.deathDate)}
         </CardDescription>
         <CardDescription className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
           <MapPin className="w-4 h-4" />

@@ -8,6 +8,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { MapPin, CalendarDays } from "lucide-react"
 import { Label } from "@/components/ui/label"
+import { formatDateRange } from "@/lib/date-utils" // Importeer de nieuwe utility
 
 interface GraveListProps {
   initialGraves: GraveData[]
@@ -88,7 +89,7 @@ export default function GraveList({ initialGraves, showFilters = true }: GraveLi
                   <CardTitle className="text-xl font-semibold">{grave.name}</CardTitle>
                   <CardDescription className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
                     <CalendarDays className="w-4 h-4" />
-                    {grave.birthDate} - {grave.deathDate}
+                    {formatDateRange(grave.birthDate, grave.deathDate)}
                   </CardDescription>
                   <CardDescription className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
                     <MapPin className="w-4 h-4" />
