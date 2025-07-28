@@ -111,16 +111,26 @@ export async function addMemory(formData: FormData) {
   try {
     const supabase = createClient() // Dit is de server client
 
-    // Log de Supabase client om te controleren of deze correct is geïnitialiseerd
-    console.log("[addMemory Server Action] Supabase client object:", supabase ? "Initialized" : "NULL")
+    // Log de full supabase object en zijn auth property voor diepe debugging
+    console.log("[addMemory Server Action] --- Deep Debugging Supabase Client State ---")
+    console.log(`[addMemory Server Action] supabase object (exists): ${!!supabase}`)
     if (supabase) {
-      console.log("[addMemory Server Action] Supabase client auth property:", supabase.auth ? "Exists" : "NULL")
+      console.log(`[addMemory Server Action] supabase.auth object (exists): ${!!supabase.auth}`)
+      console.log(`[addMemory Server Action] Type of supabase.auth: ${typeof supabase.auth}`)
+      // Probeer de auth object te stringify (kan groot zijn, maar nuttig voor debugging null/undefined)
+      try {
+        console.log(`[addMemory Server Action] supabase.auth (JSON): ${JSON.stringify(supabase.auth, null, 2)}`)
+      } catch (e) {
+        console.log(`[addMemory Server Action] Could not stringify supabase.auth: ${e}`)
+      }
     }
+    console.log("[addMemory Server Action] -------------------------------------")
 
-    // Expliciete controle: Als supabase of supabase.auth om een of andere reden null is, geef dan een fout terug.
+    // Deze controle zou nu overbodig moeten zijn als createClient() werkt zoals verwacht,
+    // maar behouden voor defensief programmeren gezien de aanhoudende fout.
     if (!supabase || !supabase.auth) {
       console.error(
-        "[addMemory Server Action] Supabase client or its auth property is null/undefined. This indicates a critical setup issue.",
+        "[addMemory Server Action] CRITICAL: Supabase client or its auth property is unexpectedly null/undefined after createClient(). This should have been caught earlier.",
       )
       return {
         success: false,
@@ -132,7 +142,7 @@ export async function addMemory(formData: FormData) {
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser()
+    } = await supabase.auth.getUser() // Dit is de lijn die de fout veroorzaakt.
 
     // Log de userError als deze bestaat, maar gooi GEEN fout als het alleen een ontbrekende sessie is.
     // De `user` variabele zal correct `null` zijn als er geen sessie is, wat wordt afgehandeld door `user?.id || null`.

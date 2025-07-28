@@ -14,9 +14,11 @@ export const createClient = () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  console.log("[Server Supabase Client] Checking environment variables...")
-  console.log(`[Server Supabase Client] NEXT_PUBLIC_SUPABASE_URL: ${supabaseUrl ? "Set" : "Not Set"}`)
-  console.log(`[Server Supabase Client] NEXT_PUBLIC_SUPABASE_ANON_KEY: ${supabaseAnonKey ? "Set" : "Not Set"}`)
+  console.log("[Server Supabase Client] Environment variables check:")
+  console.log(`[Server Supabase Client] NEXT_PUBLIC_SUPABASE_URL (length): ${supabaseUrl?.length || "Not Set"}`)
+  console.log(
+    `[Server Supabase Client] NEXT_PUBLIC_SUPABASE_ANON_KEY (length): ${supabaseAnonKey?.length || "Not Set"}`,
+  )
 
   if (!supabaseUrl || !supabaseAnonKey) {
     const errorMessage =
@@ -38,7 +40,7 @@ export const createClient = () => {
             // The `cookies().set()` method can only be called in a Server Component or Server Action.
             // This error is safe to ignore if you're only calling `cookies().set()` in a Server Action
             // or Server Component.
-            console.warn("[Server Supabase Client] Error setting cookie:", error)
+            console.warn("[Server Supabase Client] Error setting cookie (expected in Server Components):", error)
           }
         },
         remove(name: string, options: any) {
@@ -48,12 +50,21 @@ export const createClient = () => {
             // The `cookies().set()` method can only be called in a Server Component or Server Action.
             // This error is safe to ignore if you're only calling `cookies().set()` in a Server Action
             // or Server Component.
-            console.warn("[Server Supabase Client] Error removing cookie:", error)
+            console.warn("[Server Supabase Client] Error removing cookie (expected in Server Components):", error)
           }
         },
       },
     })
-    console.log("[Server Supabase Client] Server Supabase client created successfully.")
+
+    // Explicitly check if the auth property exists on the created client
+    if (!client || !client.auth) {
+      const errorMessage =
+        "Supabase server client created, but 'auth' property is missing or null. This indicates a deeper issue with Supabase client initialization."
+      console.error(`[Server Supabase Client] CRITICAL ERROR: ${errorMessage}`)
+      throw new Error(errorMessage)
+    }
+
+    console.log("[Server Supabase Client] Server Supabase client created successfully with auth property.")
     return client
   } catch (e) {
     console.error("[Server Supabase Client] Error creating server Supabase client:", e)
