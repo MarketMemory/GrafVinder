@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { AlertCircle, CheckCircle } from "lucide-react"
 
 export default function AddGravePage() {
   const supabase = createBrowserClient()
@@ -26,11 +27,20 @@ export default function AddGravePage() {
   const [deceasedPhoto, setDeceasedPhoto] = useState<File | null>(null)
   const [locationDescription, setLocationDescription] = useState("")
   const [loading, setLoading] = useState(false)
+  const [debugInfo, setDebugInfo] = useState<string[]>([])
+
+  // Debug functie om stappen te loggen
+  const addDebugInfo = (message: string) => {
+    console.log(`[DEBUG] ${message}`)
+    setDebugInfo((prev) => [...prev, `${new Date().toLocaleTimeString()}: ${message}`])
+  }
 
   useEffect(() => {
     if (supabase) {
       setSupabaseInitialized(true)
+      addDebugInfo("Supabase client geïnitialiseerd")
     } else {
+      addDebugInfo("Supabase client NIET geïnitialiseerd - controleer environment variables")
       toast({
         title: "Configuratie fout",
         description:
@@ -38,7 +48,7 @@ export default function AddGravePage() {
         variant: "destructive",
         duration: 8000,
       })
-      setLoading(false) // Stop loading if Supabase is not initialized
+      setLoading(false)
     }
   }, [supabase, toast])
 
@@ -47,7 +57,9 @@ export default function AddGravePage() {
     setter: React.Dispatch<React.SetStateAction<File | null>>,
   ) => {
     if (e.target.files && e.target.files[0]) {
-      setter(e.target.files[0])
+      const file = e.target.files[0]
+      setter(file)
+      addDebugInfo(`Bestand geselecteerd: ${file.name} (${file.size} bytes)`)
     }
   }
 
@@ -61,70 +73,129 @@ export default function AddGravePage() {
       })
       return
     }
+
     setLoading(true)
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      toast({
-        title: "Niet ingelogd",
-        description: "Je moet ingelogd zijn om een graf toe te voegen.",
-        variant: "destructive",
-      })
-      setLoading(false)
-      return
-    }
-
-    let gravePhotoUrl: string | null = null
-    let deceasedPhotoUrl: string | null = null
+    setDebugInfo([]) // Reset debug info
+    addDebugInfo("Start toevoegen van graf...")
 
     try {
-      // Upload grave photo
+      // Stap 1: Controleer gebruiker
+      addDebugInfo("Controleren van gebruiker authenticatie...")
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser()
+
+      if (userError) {
+        addDebugInfo(`Fout bij ophalen gebruiker: ${userError.message}`)
+        throw new Error(`Authenticatie fout: ${userError.message}`)
+      }
+
+      if (!user) {
+        addDebugInfo("Geen gebruiker gevonden - niet ingelogd")
+        toast({
+          title: "Niet ingelogd",
+          description: "Je moet ingelogd zijn om een graf toe te voegen.",
+          variant: "destructive",
+        })
+        setLoading(false)
+        return
+      }
+
+      addDebugInfo(`Gebruiker gevonden: ${user.email} (ID: ${user.id})`)
+
+      let gravePhotoUrl: string | null = null
+      let deceasedPhotoUrl: string | null = null
+
+      // Stap 2: Upload grave photo
       if (gravePhoto) {
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from("grave-photos")
-          .upload(`${user.id}/${Date.now()}-${gravePhoto.name}`, gravePhoto, {
-            cacheControl: "3600",
-            upsert: false,
-          })
-        if (uploadError) throw uploadError
-        gravePhotoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/grave-photos/${uploadData.path}`
+        addDebugInfo(`Uploaden van grafoto: ${gravePhoto.name}...`)
+        try {
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from("grave-photos")
+            .upload(`${user.id}/${Date.now()}-${gravePhoto.name}`, gravePhoto, {
+              cacheControl: "3600",
+              upsert: false,
+            })
+
+          if (uploadError) {
+            addDebugInfo(`Fout bij uploaden grafoto: ${uploadError.message}`)
+            throw new Error(`Upload grafoto mislukt: ${uploadError.message}`)
+          }
+
+          gravePhotoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/grave-photos/${uploadData.path}`
+          addDebugInfo(`Grafoto succesvol geüpload: ${gravePhotoUrl}`)
+        } catch (error: any) {
+          addDebugInfo(`Fout bij grafoto upload: ${error.message}`)
+          throw error
+        }
+      } else {
+        addDebugInfo("Geen grafoto geselecteerd")
       }
 
-      // Upload deceased photo
+      // Stap 3: Upload deceased photo
       if (deceasedPhoto) {
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from("deceased-photos")
-          .upload(`${user.id}/${Date.now()}-${deceasedPhoto.name}`, deceasedPhoto, {
-            cacheControl: "3600",
-            upsert: false,
-          })
-        if (uploadError) throw uploadError
-        deceasedPhotoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/deceased-photos/${uploadData.path}`
+        addDebugInfo(`Uploaden van overledene foto: ${deceasedPhoto.name}...`)
+        try {
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from("deceased-photos")
+            .upload(`${user.id}/${Date.now()}-${deceasedPhoto.name}`, deceasedPhoto, {
+              cacheControl: "3600",
+              upsert: false,
+            })
+
+          if (uploadError) {
+            addDebugInfo(`Fout bij uploaden overledene foto: ${uploadError.message}`)
+            throw new Error(`Upload overledene foto mislukt: ${uploadError.message}`)
+          }
+
+          deceasedPhotoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/deceased-photos/${uploadData.path}`
+          addDebugInfo(`Overledene foto succesvol geüpload: ${deceasedPhotoUrl}`)
+        } catch (error: any) {
+          addDebugInfo(`Fout bij overledene foto upload: ${error.message}`)
+          throw error
+        }
+      } else {
+        addDebugInfo("Geen overledene foto geselecteerd")
       }
 
-      // Insert grave data into database
-      const { error: insertError } = await supabase.from("graves").insert({
+      // Stap 4: Insert grave data into database
+      addDebugInfo("Invoegen van grafgegevens in database...")
+      const graveData = {
         name,
         birth_date: birthDate,
         death_date: deathDate,
-        biography,
+        biography: biography || null,
         grave_photo_url: gravePhotoUrl,
         deceased_photo_url: deceasedPhotoUrl,
-        location_description: locationDescription,
+        location_description: locationDescription || null,
         user_id: user.id,
-      })
+      }
 
-      if (insertError) throw insertError
+      addDebugInfo(`Grafgegevens: ${JSON.stringify(graveData, null, 2)}`)
+
+      const { data: insertData, error: insertError } = await supabase.from("graves").insert(graveData).select()
+
+      if (insertError) {
+        addDebugInfo(`Database fout: ${insertError.message}`)
+        addDebugInfo(`Database fout details: ${JSON.stringify(insertError, null, 2)}`)
+        throw new Error(`Database fout: ${insertError.message}`)
+      }
+
+      addDebugInfo(`Graf succesvol toegevoegd! Data: ${JSON.stringify(insertData, null, 2)}`)
 
       toast({
         title: "Succes!",
         description: "Graf succesvol toegevoegd.",
       })
-      router.push("/") // Navigeer terug naar de homepage of een overzichtspagina
+
+      // Wacht even voordat we navigeren
+      setTimeout(() => {
+        router.push("/my-graves")
+      }, 1000)
     } catch (error: any) {
+      addDebugInfo(`FOUT: ${error.message}`)
+      console.error("Volledige fout:", error)
       toast({
         title: "Fout bij toevoegen",
         description: error.message || "Er is een onbekende fout opgetreden.",
@@ -144,12 +215,12 @@ export default function AddGravePage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-6">
             <div className="grid gap-2">
-              <Label htmlFor="name">Naam overledene</Label>
+              <Label htmlFor="name">Naam overledene *</Label>
               <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="birthDate">Geboortedatum</Label>
+                <Label htmlFor="birthDate">Geboortedatum *</Label>
                 <Input
                   id="birthDate"
                   type="date"
@@ -159,7 +230,7 @@ export default function AddGravePage() {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="deathDate">Overlijdensdatum</Label>
+                <Label htmlFor="deathDate">Overlijdensdatum *</Label>
                 <Input
                   id="deathDate"
                   type="date"
@@ -210,10 +281,39 @@ export default function AddGravePage() {
                 {deceasedPhoto && <p className="text-sm text-gray-500">{deceasedPhoto.name}</p>}
               </div>
             </div>
+
             <Button type="submit" disabled={loading || !supabaseInitialized}>
-              {loading ? "Bezig met toevoegen..." : "Graf toevoegen"}
+              {loading ? (
+                <>
+                  <AlertCircle className="w-4 h-4 mr-2 animate-spin" />
+                  Bezig met toevoegen...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Graf toevoegen
+                </>
+              )}
             </Button>
           </form>
+
+          {/* Debug informatie (alleen zichtbaar tijdens development) */}
+          {process.env.NODE_ENV === "development" && debugInfo.length > 0 && (
+            <Card className="mt-6 bg-gray-50 dark:bg-gray-800">
+              <CardHeader>
+                <CardTitle className="text-sm">Debug Informatie</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xs space-y-1 max-h-40 overflow-y-auto">
+                  {debugInfo.map((info, index) => (
+                    <div key={index} className="font-mono text-gray-600 dark:text-gray-400">
+                      {info}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </CardContent>
       </Card>
     </div>
