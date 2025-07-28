@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button"
 import type { GraveData } from "@/components/grave-page"
 import Image from "next/image"
 import { MapPin, CalendarDays, Edit, Trash2 } from "lucide-react"
-import Link from "next/link" // Importeer Link
-import { useRouter } from "next/navigation" // Importeer useRouter
-import { useToast } from "@/hooks/use-toast" // Importeer useToast
-import { deleteGrave } from "@/actions/grave-actions" // Importeer de delete action
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
+import { deleteGrave } from "@/actions/grave-actions"
 import { useState } from "react"
 
 interface MyGraveCardProps {
@@ -23,21 +23,31 @@ export default function MyGraveCard({ grave }: MyGraveCardProps) {
   const handleDelete = async () => {
     if (window.confirm(`Weet je zeker dat je het graf van ${grave.name} wilt verwijderen?`)) {
       setIsDeleting(true)
-      const result = await deleteGrave(grave.id)
-      if (result.success) {
-        toast({
-          title: "Succes!",
-          description: result.message,
-        })
-        // De revalidatePath in de action zorgt al voor een refresh van /my-graves
-      } else {
+      try {
+        const result = await deleteGrave(grave.id)
+        if (result.success) {
+          toast({
+            title: "Succes!",
+            description: result.message,
+          })
+          // Refresh de pagina om de wijzigingen te tonen
+          router.refresh()
+        } else {
+          toast({
+            title: "Fout bij verwijderen",
+            description: result.message,
+            variant: "destructive",
+          })
+        }
+      } catch (error: any) {
         toast({
           title: "Fout bij verwijderen",
-          description: result.message,
+          description: error.message || "Er is een onbekende fout opgetreden.",
           variant: "destructive",
         })
+      } finally {
+        setIsDeleting(false)
       }
-      setIsDeleting(false)
     }
   }
 

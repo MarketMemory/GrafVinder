@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase" // Gebruik de nieuwe createClient
+import { createServerClient } from "@/lib/supabase" // Gebruik de server client
 import type { GraveData } from "@/components/grave-page"
 import MyGraveCard from "@/components/my-grave-card"
 import { Button } from "@/components/ui/button"
@@ -9,7 +9,7 @@ import { Plus } from "lucide-react"
 export const revalidate = 0 // Zorgt ervoor dat de data altijd vers is bij elke request
 
 export default async function MyGravesPage() {
-  const supabase = createClient() // Gebruik de server-side client
+  const supabase = createServerClient() // Gebruik de server-side client
 
   const {
     data: { user },
@@ -25,24 +25,27 @@ export default async function MyGravesPage() {
     .from("graves")
     .select("*")
     .eq("user_id", user.id) // Filter op de user_id van de ingelogde gebruiker
-    .order("death_date", { ascending: false })
+    .order("created_at", { ascending: false }) // Sorteer op aanmaakdatum (nieuwste eerst)
 
   if (error) {
     console.error("Fout bij het ophalen van eigen graven:", error)
     return (
       <div className="container mx-auto py-8 text-center">
         <p className="text-red-500">Er is een fout opgetreden bij het laden van je graven.</p>
+        <p className="text-sm text-gray-600 mt-2">Fout: {error.message}</p>
       </div>
     )
   }
 
   // Pas de data aan naar de GraveData interface
-  const formattedGraves: GraveData[] = graves.map((grave) => ({
+  const formattedGraves: (GraveData & { id: string })[] = graves.map((grave) => ({
+    id: grave.id, // Zorg ervoor dat ID beschikbaar is
     name: grave.name,
     birthDate: grave.birth_date,
     deathDate: grave.death_date,
     biography: grave.biography || "",
     gravePhotoUrl: grave.grave_photo_url || "/placeholder.svg?height=160&width=160",
+    deceasedPhotoUrl: grave.deceased_photo_url || "/placeholder.svg?height=160&width=160",
     location: {
       latitude: grave.location_latitude || 0,
       longitude: grave.location_longitude || 0,
@@ -78,8 +81,18 @@ export default async function MyGravesPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {formattedGraves.map((grave) => (
-              <MyGraveCard key={grave.name} grave={grave} />
+              <MyGraveCard key={grave.id} grave={grave} />
             ))}
+          </div>
+        )}
+
+        {/* Debug informatie voor development */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="mt-8 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+            <h3 className="font-bold mb-2">Debug Info:</h3>
+            <p className="text-sm">Gebruiker ID: {user.id}</p>
+            <p className="text-sm">Aantal graven gevonden: {graves.length}</p>
+            <p className="text-sm">Graven data: {JSON.stringify(graves, null, 2)}</p>
           </div>
         )}
       </div>

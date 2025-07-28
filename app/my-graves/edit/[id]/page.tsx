@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase"
+import { createServerClient } from "@/lib/supabase"
 import { redirect } from "next/navigation"
 import EditGraveForm from "@/components/edit-grave-form"
 import type { GraveData } from "@/components/grave-page"
@@ -12,7 +12,7 @@ interface EditGravePageProps {
 }
 
 export default async function EditGravePage({ params }: EditGravePageProps) {
-  const supabase = createClient()
+  const supabase = createServerClient()
 
   const {
     data: { user },
@@ -44,7 +44,8 @@ export default async function EditGravePage({ params }: EditGravePageProps) {
     deathDate: grave.death_date,
     biography: grave.biography || "",
     gravePhotoUrl: grave.grave_photo_url || "/placeholder.svg?height=160&width=160",
-    deceased_photo_url: grave.deceased_photo_url || "/placeholder.svg?height=160&width=160", // Voeg deze toe
+    deceasedPhotoUrl: grave.deceased_photo_url || "/placeholder.svg?height=160&width=160",
+    deceased_photo_url: grave.deceased_photo_url, // Voor de edit form
     location: {
       latitude: grave.location_latitude || 0,
       longitude: grave.location_longitude || 0,
@@ -55,7 +56,9 @@ export default async function EditGravePage({ params }: EditGravePageProps) {
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-gray-100 dark:bg-gray-900 py-8">
-      <EditGraveForm initialData={formattedGrave} />
+      <div className="container mx-auto px-4 md:px-6 lg:px-8">
+        <EditGraveForm initialData={formattedGrave} />
+      </div>
     </main>
   )
 }
