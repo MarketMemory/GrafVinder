@@ -111,10 +111,22 @@ export async function addMemory(formData: FormData) {
   try {
     const supabase = createClient() // Dit is de server client
 
-    // Expliciete controle: Als supabase om een of andere reden null is, geef dan een fout terug.
-    if (!supabase) {
-      console.error("[addMemory Server Action] Supabase client is null after createClient().")
-      return { success: false, message: "Interne serverfout: Supabase client kon niet worden geïnitialiseerd." }
+    // Log de Supabase client om te controleren of deze correct is geïnitialiseerd
+    console.log("[addMemory Server Action] Supabase client object:", supabase ? "Initialized" : "NULL")
+    if (supabase) {
+      console.log("[addMemory Server Action] Supabase client auth property:", supabase.auth ? "Exists" : "NULL")
+    }
+
+    // Expliciete controle: Als supabase of supabase.auth om een of andere reden null is, geef dan een fout terug.
+    if (!supabase || !supabase.auth) {
+      console.error(
+        "[addMemory Server Action] Supabase client or its auth property is null/undefined. This indicates a critical setup issue.",
+      )
+      return {
+        success: false,
+        message:
+          "Interne serverfout: Supabase authenticatie service niet beschikbaar. Controleer uw Supabase configuratie en omgevingsvariabelen.",
+      }
     }
 
     const {
