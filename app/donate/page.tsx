@@ -81,7 +81,7 @@ export default function DonatePage() {
             <CardContent>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Helpt met de dagelijkse serverkosten</p>
               <Button className="w-full" asChild>
-                <a href="https://www.paypal.com/donate" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.paypal.com/donate/buttons/manage/DJA4BB9Y34QNY" target="_blank" rel="noopener noreferrer">
                   Doneer €5
                 </a>
               </Button>
