@@ -144,7 +144,7 @@ export default function DonatePage() {
                 />
               </div>
               <Button asChild>
-                <a href="https://www.paypal.com/donate" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.paypal.com/donate/?hosted_button_id=XZWMS4Q49QNLJ" target="_blank" rel="noopener noreferrer">
                   Doneer
                 </a>
               </Button>
