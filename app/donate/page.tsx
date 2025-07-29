@@ -96,7 +96,7 @@ export default function DonatePage() {
             <CardContent>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Ondersteunt hosting voor een week</p>
               <Button className="w-full" asChild>
-                <a href="https://www.paypal.com/donate" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.paypal.com/donate/?hosted_button_id=TL8H3JKTEYCL2" target="_blank" rel="noopener noreferrer">
                   Doneer €15
                 </a>
               </Button>
@@ -113,7 +113,7 @@ export default function DonatePage() {
                 Financiert nieuwe functies en verbeteringen
               </p>
               <Button className="w-full" asChild>
-                <a href="https://www.paypal.com/donate" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.paypal.com/donate/?hosted_button_id=Q2WUTAYH2RQVS" target="_blank" rel="noopener noreferrer">
                   Doneer €50
                 </a>
               </Button>
