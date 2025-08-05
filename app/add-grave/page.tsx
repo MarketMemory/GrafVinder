@@ -272,7 +272,7 @@ export default function AddGravePage() {
                 {gravePhoto && <p className="text-sm text-gray-500">{gravePhoto.name}</p>}
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="deceasedPhoto">Foto van de overledene</Label>
+                <Label htmlFor="deceasedPhoto">Foto van de overledene (Max. formaat 250x250)</Label>
                 <Input
                   id="deceasedPhoto"
                   type="file"
