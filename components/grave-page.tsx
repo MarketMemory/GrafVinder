@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import AddMemoryForm from "./add-memory-form"
 import EditMemoryForm from "./edit-memory-form"
 import { useState } from "react"
-import { formatDateRange } from "@/lib/date-utils"
+import { formatDate, formatDateRange } from "@/lib/date-utils"
 
 export interface GraveData {
   id: string // Voeg ID toe voor unieke identificatie
@@ -169,7 +169,7 @@ const GravePage = ({ data }: GravePageProps) => {
                     <p className="italic text-gray-700 dark:text-gray-300 mb-2">"{memory.text}"</p>
                     <div className="flex justify-between items-center">
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        — {memory.author}, {memory.date}
+                        — {memory.author}, {formatDate(memory.date)}
                       </p>
                       <Button variant="ghost" size="icon" onClick={() => handleEditMemory(memory)}>
                         <Edit className="w-4 h-4" />

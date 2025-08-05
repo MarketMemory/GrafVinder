@@ -4,28 +4,6 @@ import GraveList from "@/components/grave-list"
 import type { GraveData } from "@/components/grave-page"
 
 export const revalidate = 0 // Zorgt ervoor dat de data altijd vers is bij elke request
-export const metadata = {
-  title: 'GrafVinder – Vind graven van overleden dierbaren in Nederland',
-  description:
-    'GrafVinder helpt je om graven van overleden dierbaren snel en gemakkelijk terug te vinden op begraafplaatsen in Nederland.',
-  openGraph: {
-    title: 'GrafVinder – Vind graven van overleden dierbaren in Nederland',
-    description:
-      'GrafVinder helpt je om graven van overleden dierbaren snel en gemakkelijk terug te vinden op begraafplaatsen in Nederland.',
-    url: 'https://grafvinder.vercel.app',
-    siteName: 'GrafVinder',
-    locale: 'nl_NL',
-    type: 'website',
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-    },
-  },
-};
 
 export default async function Home() {
   const supabase = createServerClient()
