@@ -106,41 +106,5 @@ export async function deleteGrave(graveId: string) {
   }
 }
 
-// De addMemory functie is verplaatst naar components/add-memory-form.tsx
-// omdat deze nu client-side wordt afgehandeld.
-// export async function addMemory(...) { ... }
-
-// NIEUW: Functie om een herinnering te updaten
-export async function updateMemory(formData: FormData) {
-  const supabase = createClient()
-
-  const memoryId = formData.get("memoryId") as string
-  const graveId = formData.get("graveId") as string // Nodig voor revalidatePath
-  const text = formData.get("text") as string
-  const author = formData.get("author") as string
-
-  if (!memoryId || !graveId || !text || !author) {
-    return { success: false, message: "Alle velden zijn verplicht." }
-  }
-
-  try {
-    const { error } = await supabase
-      .from("memories")
-      .update({
-        text,
-        author,
-      })
-      .eq("id", memoryId) // Update de specifieke herinnering
-
-    if (error) throw error
-
-    revalidatePath(`/graves/${graveId}`) // Herlaad de detailpagina om de wijzigingen te tonen
-    return { success: true, message: "Herinnering succesvol bijgewerkt!" }
-  } catch (error: any) {
-    console.error("Fout bij bijwerken herinnering:", error)
-    return {
-      success: false,
-      message: error.message || "Er is een onbekende fout opgetreden bij het bijwerken van de herinnering.",
-    }
-  }
-}
+// De updateMemory functie is verplaatst naar components/edit-memory-form.tsx
+// export async function updateMemory(...) { ... }

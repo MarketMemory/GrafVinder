@@ -1,14 +1,16 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import type React from "react"
+
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { DialogFooter } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { useActionState } from "react"
-import { updateMemory } from "@/actions/grave-actions"
+import { createBrowserClient } from "@/lib/supabase-browser" // Importeer de browser client
+import { useRouter } from "next/navigation" // Importeer useRouter voor client-side revalidatie
 import type { GraveData } from "./grave-page" // Importeer GraveData om Memory type te gebruiken
 
 interface EditMemoryFormProps {
@@ -19,30 +21,71 @@ interface EditMemoryFormProps {
 
 export default function EditMemoryForm({ initialData, graveId, onSuccess }: EditMemoryFormProps) {
   const { toast } = useToast()
+  const router = useRouter()
+  const supabase = createBrowserClient() // Initialiseer de browser client
 
   const [text, setText] = useState(initialData.text)
   const [author, setAuthor] = useState(initialData.author)
+  const [isPending, setIsPending] = useState(false) // Lokale loading state
 
-  const [state, formAction, isPending] = useActionState(updateMemory, null)
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault() // Voorkom standaard formulier indiening
+    setIsPending(true)
 
-  useEffect(() => {
-    if (state?.success) {
+    if (!supabase) {
       toast({
-        title: "Succes!",
-        description: state.message,
-      })
-      onSuccess() // Sluit de dialoog
-    } else if (state?.success === false) {
-      toast({
-        title: "Fout bij bijwerken",
-        description: state.message,
+        title: "Fout",
+        description: "Supabase client is niet geïnitialiseerd. Controleer je omgevingsvariabelen.",
         variant: "destructive",
       })
+      setIsPending(false)
+      return
     }
-  }, [state, toast, onSuccess])
+
+    if (!text || !author) {
+      toast({
+        title: "Validatiefout",
+        description: "Alle velden zijn verplicht.",
+        variant: "destructive",
+      })
+      setIsPending(false)
+      return
+    }
+
+    try {
+      const { error: updateError } = await supabase
+        .from("memories")
+        .update({
+          text,
+          author,
+        })
+        .eq("id", initialData.id) // Update de specifieke herinnering
+
+      if (updateError) {
+        console.error("Supabase Update Error:", updateError)
+        throw updateError
+      }
+
+      toast({
+        title: "Succes!",
+        description: "Herinnering succesvol bijgewerkt.",
+      })
+      onSuccess() // Sluit de dialoog
+      router.refresh() // Herlaad de pagina om de bijgewerkte herinnering te tonen
+    } catch (error: any) {
+      console.error("Caught error in editMemoryForm:", error)
+      toast({
+        title: "Fout bij bijwerken",
+        description: error.message || "Er is een onbekende fout opgetreden bij het bijwerken van de herinnering.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsPending(false)
+    }
+  }
 
   return (
-    <form action={formAction} className="grid gap-4 py-4">
+    <form onSubmit={handleSubmit} className="grid gap-4 py-4">
       <input type="hidden" name="memoryId" value={initialData.id} />
       <input type="hidden" name="graveId" value={graveId} />
 
