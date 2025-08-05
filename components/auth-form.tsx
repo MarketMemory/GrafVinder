@@ -24,6 +24,8 @@ export default function AuthForm() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
+          // Zorg ervoor dat deze URL correct is en verwijst naar je callback route
+          // Het moet eindigen op /auth/callback, ZONDER een # of andere fragmenten.
           emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback`,
         },
       })
