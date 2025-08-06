@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import AddMemoryForm from "./add-memory-form"
 import EditMemoryForm from "./edit-memory-form"
 import { useState } from "react"
-import { formatDateRange } from "@/lib/date-utils"
+import { formatDate, formatDateRange } from "@/lib/date-utils"
 
 export interface GraveData {
   id: string // Voeg ID toe voor unieke identificatie
@@ -58,7 +58,9 @@ const GravePage = ({ data }: GravePageProps) => {
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8">
-      <Card className="max-w-4xl mx-auto shadow-lg">
+      <Card className="max-w-4xl mx-auto shadow-lg bg-card">
+        {" "}
+        {/* Toegevoegd: bg-card */}
         {/* Header */}
         <CardHeader className="flex flex-col items-center text-center p-6 md:p-8">
           {data.deceasedPhotoUrl && (
@@ -67,7 +69,9 @@ const GravePage = ({ data }: GravePageProps) => {
                 src={data.deceasedPhotoUrl || "/placeholder.svg?height=192&width=192&query=deceased%20person"}
                 alt={`Foto van ${data.name}`}
               />
-              <AvatarFallback>
+              <AvatarFallback className="bg-muted text-muted-foreground">
+                {" "}
+                {/* Toegevoegd: bg-muted text-muted-foreground */}
                 {data.name
                   .split(" ")
                   .map((n) => n[0])
@@ -91,7 +95,6 @@ const GravePage = ({ data }: GravePageProps) => {
             </a>
           </Button>
         </CardHeader>
-
         {/* Content */}
         <CardContent className="p-6 md:p-8 grid gap-8">
           {/* Grafoto */}
@@ -169,7 +172,7 @@ const GravePage = ({ data }: GravePageProps) => {
                     <p className="italic text-gray-700 dark:text-gray-300 mb-2">"{memory.text}"</p>
                     <div className="flex justify-between items-center">
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        — {memory.author}, {memory.date}
+                        — {memory.author}, {formatDate(memory.date)}
                       </p>
                       <Button variant="ghost" size="icon" onClick={() => handleEditMemory(memory)}>
                         <Edit className="w-4 h-4" />
