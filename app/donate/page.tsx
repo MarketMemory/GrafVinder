@@ -81,7 +81,7 @@ export default function DonatePage() {
             <CardContent>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Helpt met de dagelijkse serverkosten</p>
               <Button className="w-full" asChild>
-                <a href="https://www.paypal.com/donate" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.paypal.com/donate/?hosted_button_id=UCNV7XACJ3AC2" target="_blank" rel="noopener noreferrer">
                   Doneer €5
                 </a>
               </Button>
@@ -96,7 +96,7 @@ export default function DonatePage() {
             <CardContent>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Ondersteunt hosting voor een week</p>
               <Button className="w-full" asChild>
-                <a href="https://www.paypal.com/donate" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.paypal.com/donate/?hosted_button_id=D5KYP37KQLE9Y" target="_blank" rel="noopener noreferrer">
                   Doneer €15
                 </a>
               </Button>
@@ -113,7 +113,7 @@ export default function DonatePage() {
                 Financiert nieuwe functies en verbeteringen
               </p>
               <Button className="w-full" asChild>
-                <a href="https://www.paypal.com/donate" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.paypal.com/donate/?hosted_button_id=7KPT6W5G64D3C" target="_blank" rel="noopener noreferrer">
                   Doneer €50
                 </a>
               </Button>
@@ -144,7 +144,7 @@ export default function DonatePage() {
                 />
               </div>
               <Button asChild>
-                <a href="https://www.paypal.com/donate" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.paypal.com/donate/?hosted_button_id=EKF67WY2VBH7E" target="_blank" rel="noopener noreferrer">
                   Doneer
                 </a>
               </Button>
