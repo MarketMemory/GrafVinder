@@ -5,64 +5,57 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import Header from "@/components/header"
 import { Toaster } from "@/components/ui/toaster"
-import { ToasterProvider } from "@/hooks/use-toast"
 
 const inter = Inter({ subsets: ["latin"] })
-
-// Gebruik process.env.NEXT_PUBLIC_SITE_URL voor de canonical URL
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://grafvinder.vercel.app"
 
 export const metadata: Metadata = {
   title: "GrafVinder - Vind eenvoudig graven in Nederland",
   description:
     "GrafVinder helpt je om graven van overleden dierbaren snel en gemakkelijk terug te vinden op begraafplaatsen in Nederland.",
-  robots: "index, follow",
-  authors: [{ name: "GrafVinder" }],
+  keywords: "graven, begraafplaats, nederland, zoeken, herdenken, overleden",
+  authors: [{ name: "GrafVinder Team" }],
   openGraph: {
     title: "GrafVinder - Vind eenvoudig graven in Nederland",
-    description: "Zoek graven van dierbaren en ontdek hun laatste rustplaats met behulp van GrafVinder.",
-    url: siteUrl,
-    images: [
-      {
-        url: `${siteUrl}/favicon.png`,
-        width: 512,
-        height: 512,
-        alt: "GrafVinder logo: duif en halve maan",
-      },
-    ],
+    description:
+      "GrafVinder helpt je om graven van overleden dierbaren snel en gemakkelijk terug te vinden op begraafplaatsen in Nederland.",
+    url: "https://grafvinder.vercel.app",
+    siteName: "GrafVinder",
+    locale: "nl_NL",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "GrafVinder - Vind eenvoudig graven in Nederland",
-    description: "Zoek graven van dierbaren en ontdek hun laatste rustplaats met behulp van GrafVinder.",
-    images: [`${siteUrl}/favicon.png`],
+    description:
+      "GrafVinder helpt je om graven van overleden dierbaren snel en gemakkelijk terug te vinden op begraafplaatsen in Nederland.",
   },
-  alternates: {
-    canonical: siteUrl,
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
-  icons: {
-    icon: "/favicon.png",
-    apple: "/favicon.png",
-  },
-  generator: "v0.dev",
+    generator: 'v0.app'
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="nl" suppressHydrationWarning>
       <body className={inter.className}>
-        <ToasterProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <Header />
-            {children}
-            <Toaster />
-          </ThemeProvider>
-        </ToasterProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <Header />
+          <main>{children}</main>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   )

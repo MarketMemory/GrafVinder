@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { DonationBanner } from "@/components/donation-banner"
+import DonationBanner from "@/components/donation-banner"
 import { Search, Plus, Heart, Users } from "lucide-react"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
@@ -9,6 +9,15 @@ import { nl } from "date-fns/locale"
 
 export default async function HomePage() {
   const supabase = createClient()
+
+  // Haal de instelling voor de donatiebanner op
+  const { data: bannerSetting, error: settingError } = await supabase
+    .from("app_settings")
+    .select("setting_value")
+    .eq("setting_name", "show_donation_banner")
+    .single()
+
+  const showDonationBanner = bannerSetting?.setting_value === "true" && !settingError
 
   // Fetch recent graves
   const { data: recentGraves } = await supabase
@@ -19,7 +28,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen">
-      <DonationBanner />
+      {showDonationBanner && <DonationBanner />}
 
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-background to-muted/50 py-20">
