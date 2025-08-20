@@ -5,56 +5,64 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import Header from "@/components/header"
 import { Toaster } from "@/components/ui/toaster"
+import { ToasterProvider } from "@/hooks/use-toast"
 
 const inter = Inter({ subsets: ["latin"] })
 
+// Gebruik process.env.NEXT_PUBLIC_SITE_URL voor de canonical URL
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://grafvinder.vercel.app"
+
 export const metadata: Metadata = {
-  title: "GrafVinder - Vind en herdenk geliefden",
-  description: "Een platform om graven te vinden en geliefden te herdenken in Nederland",
-  keywords: ["graf", "begraafplaats", "herdenken", "nederland", "zoeken"],
-  authors: [{ name: "GrafVinder Team" }],
+  title: "GrafVinder - Vind eenvoudig graven in Nederland",
+  description:
+    "GrafVinder helpt je om graven van overleden dierbaren snel en gemakkelijk terug te vinden op begraafplaatsen in Nederland.",
+  robots: "index, follow",
+  authors: [{ name: "GrafVinder" }],
   openGraph: {
-    title: "GrafVinder - Vind en herdenk geliefden",
-    description: "Een platform om graven te vinden en geliefden te herdenken in Nederland",
-    url: "https://grafvinder.vercel.app",
-    siteName: "GrafVinder",
-    locale: "nl_NL",
+    title: "GrafVinder - Vind eenvoudig graven in Nederland",
+    description: "Zoek graven van dierbaren en ontdek hun laatste rustplaats met behulp van GrafVinder.",
+    url: siteUrl,
+    images: [
+      {
+        url: `${siteUrl}/favicon.png`,
+        width: 512,
+        height: 512,
+        alt: "GrafVinder logo: duif en halve maan",
+      },
+    ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "GrafVinder - Vind en herdenk geliefden",
-    description: "Een platform om graven te vinden en geliefden te herdenken in Nederland",
+    title: "GrafVinder - Vind eenvoudig graven in Nederland",
+    description: "Zoek graven van dierbaren en ontdek hun laatste rustplaats met behulp van GrafVinder.",
+    images: [`${siteUrl}/favicon.png`],
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
+  alternates: {
+    canonical: siteUrl,
   },
-    generator: 'v0.app'
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
+  generator: "v0.dev",
 }
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode
-}) {
+}>) {
   return (
     <html lang="nl" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <div className="min-h-screen bg-background">
+        <ToasterProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             <Header />
-            <main>{children}</main>
-          </div>
-          <Toaster />
-        </ThemeProvider>
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </ToasterProvider>
       </body>
     </html>
   )

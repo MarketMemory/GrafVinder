@@ -13,32 +13,30 @@ import { useToast } from "@/hooks/use-toast"
 export default function AuthForm() {
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
-  const { toast } = useToast()
   const supabase = createBrowserClient()
+  const { toast } = useToast()
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!email) {
+    if (!supabase) {
+      console.error("[AUTH FORM] Supabase client not available")
       toast({
-        title: "E-mailadres vereist",
-        description: "Voer je e-mailadres in om door te gaan.",
+        title: "Fout",
+        description: "Authenticatie service niet beschikbaar",
         variant: "destructive",
       })
       return
     }
 
     setLoading(true)
-    console.log("[AUTH FORM] Starting sign in process for:", email)
+    console.log("[AUTH FORM] Attempting to sign in with email:", email)
 
     try {
-      const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback?next=/add-grave`
-      console.log("[AUTH FORM] Redirect URL:", redirectUrl)
-
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: redirectUrl,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback?next=/add-grave`,
         },
       })
 
@@ -55,7 +53,6 @@ export default function AuthForm() {
           title: "Magic link verzonden!",
           description: "Controleer je e-mail voor de inloglink.",
         })
-        setEmail("")
       }
     } catch (error) {
       console.error("[AUTH FORM] Unexpected error:", error)
@@ -70,30 +67,34 @@ export default function AuthForm() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>Inloggen</CardTitle>
-        <CardDescription>Voer je e-mailadres in om een magic link te ontvangen</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSignIn} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">E-mailadres</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="je@voorbeeld.nl"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={loading}
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Verzenden..." : "Magic Link Verzenden"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">Inloggen bij GrafVinder</CardTitle>
+          <CardDescription className="text-center">
+            Voer je e-mailadres in om een magic link te ontvangen
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSignIn} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">E-mailadres</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="je@voorbeeld.nl"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Verzenden..." : "Magic Link Verzenden"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

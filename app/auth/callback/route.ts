@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
 
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get("code")
-  const next = searchParams.get("next") ?? "/"
+  const next = searchParams.get("next") ?? "/add-grave"
 
   console.log("[AUTH CALLBACK] Code present:", !!code)
   console.log("[AUTH CALLBACK] Next URL:", next)
@@ -26,10 +26,7 @@ export async function GET(request: NextRequest) {
       console.log("[AUTH CALLBACK] Successfully authenticated user:", data.user?.email)
 
       // Successful authentication, redirect to the next URL
-      const redirectUrl = `${origin}${next}`
-      console.log("[AUTH CALLBACK] Redirecting to:", redirectUrl)
-
-      return NextResponse.redirect(redirectUrl)
+      return NextResponse.redirect(`${origin}${next}`)
     } catch (error) {
       console.error("[AUTH CALLBACK] Unexpected error:", error)
       return NextResponse.redirect(`${origin}/auth?error=Authentication failed`)
