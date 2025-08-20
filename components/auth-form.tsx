@@ -18,15 +18,24 @@ export default function AuthForm() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
 
-    console.log("[DEBUG] Starting sign in process for email:", email)
+    if (!email) {
+      toast({
+        title: "E-mailadres vereist",
+        description: "Voer je e-mailadres in om door te gaan.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setLoading(true)
+    console.log("[AUTH FORM] Starting sign in process for:", email)
 
     try {
       const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback?next=/add-grave`
-      console.log("[DEBUG] Redirect URL:", redirectUrl)
+      console.log("[AUTH FORM] Redirect URL:", redirectUrl)
 
-      const { data, error } = await supabase.auth.signInWithOtp({
+      const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
           emailRedirectTo: redirectUrl,
@@ -34,24 +43,24 @@ export default function AuthForm() {
       })
 
       if (error) {
-        console.error("[ERROR] Sign in error:", error)
+        console.error("[AUTH FORM] Sign in error:", error)
         toast({
-          title: "Fout",
+          title: "Fout bij inloggen",
           description: error.message,
           variant: "destructive",
         })
       } else {
-        console.log("[DEBUG] Sign in successful, data:", data)
+        console.log("[AUTH FORM] Magic link sent successfully")
         toast({
-          title: "Controleer je e-mail",
-          description: "We hebben je een magic link gestuurd om in te loggen.",
+          title: "Magic link verzonden!",
+          description: "Controleer je e-mail voor de inloglink.",
         })
         setEmail("")
       }
     } catch (error) {
-      console.error("[ERROR] Exception during sign in:", error)
+      console.error("[AUTH FORM] Unexpected error:", error)
       toast({
-        title: "Fout",
+        title: "Onverwachte fout",
         description: "Er is iets misgegaan. Probeer het opnieuw.",
         variant: "destructive",
       })
@@ -81,7 +90,7 @@ export default function AuthForm() {
             />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Bezig..." : "Verstuur magic link"}
+            {loading ? "Verzenden..." : "Magic Link Verzenden"}
           </Button>
         </form>
       </CardContent>
