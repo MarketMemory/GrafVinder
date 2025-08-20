@@ -1,58 +1,32 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+
+import { useState } from "react"
 import { createBrowserClient } from "@/lib/supabase-browser"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { useSearchParams } from "next/navigation"
 
 export default function AuthForm() {
-  const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState("")
-  const supabase = createBrowserClient()
+  const [loading, setLoading] = useState(false)
   const { toast } = useToast()
-  const searchParams = useSearchParams()
+  const supabase = createBrowserClient()
 
-  // Toon foutmeldingen van de callback route
-  useEffect(() => {
-    const error = searchParams.get("error")
-    if (error) {
-      let errorMessage = "Er is een onbekende fout opgetreden."
-
-      switch (error) {
-        case "callback_error":
-          errorMessage = "Er ging iets mis bij het verifiëren van je e-mail. Probeer opnieuw."
-          break
-        case "no_code":
-          errorMessage = "Ongeldige authenticatie link. Vraag een nieuwe magic link aan."
-          break
-        case "unexpected_error":
-          errorMessage = "Er is een onverwachte fout opgetreden. Probeer het later opnieuw."
-          break
-      }
-
-      toast({
-        title: "Authenticatie fout",
-        description: errorMessage,
-        variant: "destructive",
-      })
-    }
-  }, [searchParams, toast])
-
-  const handleLogin = async (event: React.FormEvent) => {
-    event.preventDefault()
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault()
     setLoading(true)
 
-    try {
-      console.log("[AUTH FORM] Versturen magic link naar:", email)
-      const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/add-grave`
-      console.log("[AUTH FORM] Redirect URL:", redirectUrl)
+    console.log("[DEBUG] Starting sign in process for email:", email)
 
-      const { error } = await supabase.auth.signInWithOtp({
+    try {
+      const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback?next=/add-grave`
+      console.log("[DEBUG] Redirect URL:", redirectUrl)
+
+      const { data, error } = await supabase.auth.signInWithOtp({
         email,
         options: {
           emailRedirectTo: redirectUrl,
@@ -60,22 +34,25 @@ export default function AuthForm() {
       })
 
       if (error) {
-        console.error("[AUTH FORM] Supabase fout:", error.message)
-        throw error
+        console.error("[ERROR] Sign in error:", error)
+        toast({
+          title: "Fout",
+          description: error.message,
+          variant: "destructive",
+        })
+      } else {
+        console.log("[DEBUG] Sign in successful, data:", data)
+        toast({
+          title: "Controleer je e-mail",
+          description: "We hebben je een magic link gestuurd om in te loggen.",
+        })
+        setEmail("")
       }
-
-      console.log("[AUTH FORM] Magic link succesvol verstuurd")
-
+    } catch (error) {
+      console.error("[ERROR] Exception during sign in:", error)
       toast({
-        title: "Controleer je e-mail!",
-        description:
-          "We hebben een magic link naar je e-mailadres gestuurd. Klik op de link om in te loggen en een graf toe te voegen.",
-      })
-    } catch (error: any) {
-      console.error("[AUTH FORM] Fout:", error)
-      toast({
-        title: "Fout bij authenticatie",
-        description: error.message || "Er is een onbekende fout opgetreden.",
+        title: "Fout",
+        description: "Er is iets misgegaan. Probeer het opnieuw.",
         variant: "destructive",
       })
     } finally {
@@ -84,27 +61,27 @@ export default function AuthForm() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-lg">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Welkom bij GrafVinder</CardTitle>
-        <CardDescription>Log in of registreer via magic link met je e-mailadres.</CardDescription>
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle>Inloggen</CardTitle>
+        <CardDescription>Voer je e-mailadres in om een magic link te ontvangen</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleLogin} className="grid gap-4">
-          <div className="grid gap-2">
+        <form onSubmit={handleSignIn} className="space-y-4">
+          <div className="space-y-2">
             <Label htmlFor="email">E-mailadres</Label>
             <Input
               id="email"
               type="email"
-              placeholder="jouw@voorbeeld.nl"
+              placeholder="je@voorbeeld.nl"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={loading}
             />
           </div>
-          <Button type="submit" disabled={loading}>
-            {loading ? "Bezig met verzenden..." : "Stuur magic link"}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Bezig..." : "Verstuur magic link"}
           </Button>
         </form>
       </CardContent>
