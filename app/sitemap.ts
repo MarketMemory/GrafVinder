@@ -5,7 +5,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: "https://grafvinder.vercel.app",
       lastModified: new Date(),
-      changeFrequency: "daily",
+      changeFrequency: "yearly",
       priority: 1,
     },
     {
@@ -17,20 +17,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: "https://grafvinder.vercel.app/graves",
       lastModified: new Date(),
-      changeFrequency: "daily",
+      changeFrequency: "weekly",
       priority: 0.9,
     },
     {
       url: "https://grafvinder.vercel.app/donate",
       lastModified: new Date(),
       changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: "https://grafvinder.vercel.app/auth",
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.6,
+      priority: 0.5,
     },
   ]
 }
