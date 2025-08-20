@@ -68,47 +68,42 @@ export default function Header() {
   }
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-sm py-4 px-6 flex items-center justify-between sticky top-0 z-50">
-      <Link href="/" className="text-2xl font-bold text-gray-900 dark:text-gray-50">
+    <header className="bg-white border-b border-gray-200 py-4 px-6 flex items-center justify-between sticky top-0 z-50">
+      <Link href="/" className="text-xl font-bold text-gray-900">
         GrafVinder
       </Link>
       {!supabase ? (
-        <nav className="flex items-center gap-4">
-          <Link href="/graves" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50">
+        <nav className="flex items-center gap-6">
+          <Link href="/graves" className="text-gray-600 hover:text-gray-900 font-medium">
             Alle Graven
           </Link>
-          <Link href="/about" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50">
+          <Link href="/about" className="text-gray-600 hover:text-gray-900 font-medium">
             Over Ons
           </Link>
-          <Link href="/donate" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50">
+          <Link href="/donate" className="text-gray-600 hover:text-gray-900 font-medium">
             Doneren
           </Link>
+          <Button className="bg-gray-900 hover:bg-gray-800 text-white">Inloggen</Button>
         </nav>
       ) : (
-        <nav className="flex items-center gap-4">
-          <Link href="/graves" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50">
+        <nav className="flex items-center gap-6">
+          <Link href="/graves" className="text-gray-600 hover:text-gray-900 font-medium">
             Alle Graven
           </Link>
-          <Link href="/about" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50">
+          <Link href="/about" className="text-gray-600 hover:text-gray-900 font-medium">
             Over Ons
           </Link>
-          <Link href="/donate" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50">
+          <Link href="/donate" className="text-gray-600 hover:text-gray-900 font-medium">
             Doneren
           </Link>
           {loading ? (
-            <div className="w-20 h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
           ) : user ? (
             <>
-              <Link
-                href="/my-graves"
-                className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50"
-              >
+              <Link href="/my-graves" className="text-gray-600 hover:text-gray-900 font-medium">
                 Mijn Graven
               </Link>
-              <Link
-                href="/add-grave"
-                className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50"
-              >
+              <Link href="/add-grave" className="text-gray-600 hover:text-gray-900 font-medium">
                 Graf Toevoegen
               </Link>
               <Button onClick={handleSignOut} disabled={loading} variant="outline">
@@ -116,7 +111,7 @@ export default function Header() {
               </Button>
             </>
           ) : (
-            <Button asChild>
+            <Button asChild className="bg-gray-900 hover:bg-gray-800 text-white">
               <Link href="/auth">Inloggen</Link>
             </Button>
           )}
