@@ -1,64 +1,130 @@
-import { createServerClient } from "@/lib/supabase"
-import { redirect } from "next/navigation"
-import EditGraveForm from "@/components/edit-grave-form"
-import type { GraveData } from "@/components/grave-page"
+"use client"
 
-export const revalidate = 0 // Zorgt ervoor dat de data altijd vers is
+import { createClient } from "@/lib/supabase"
+import { redirect, notFound } from "next/navigation"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
+import { updateGrave, deleteGrave } from "@/actions/grave-actions"
 
-interface EditGravePageProps {
+interface PageProps {
   params: {
-    id: string // Het ID van het graf uit de URL
+    id: string
   }
 }
 
-export default async function EditGravePage({ params }: EditGravePageProps) {
-  const supabase = createServerClient()
+export default async function EditGravePage({ params }: PageProps) {
+  const supabase = createClient()
 
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect("/auth") // Stuur door als niet ingelogd
+  if (authError || !user) {
+    redirect("/auth")
   }
 
-  // Haal het specifieke graf op
   const { data: grave, error } = await supabase
     .from("graves")
     .select("*")
     .eq("id", params.id)
-    .eq("user_id", user.id) // Zorg ervoor dat alleen de eigenaar zijn eigen graf kan bewerken
-    .single() // Haal één record op
+    .eq("created_by", user.id)
+    .single()
 
   if (error || !grave) {
-    console.error("Fout bij ophalen graf voor bewerking:", error)
-    // Redirect naar 'Mijn Graven' of toon een foutmelding
-    redirect("/my-graves?error=grave_not_found_or_unauthorized")
+    notFound()
   }
 
-  // Formatteer de data naar de GraveData interface voor de client component
-  const formattedGrave: GraveData & { id: string; deceased_photo_url?: string | null } = {
-    id: grave.id,
-    name: grave.name,
-    birthDate: grave.birth_date,
-    deathDate: grave.death_date,
-    biography: grave.biography || "",
-    gravePhotoUrl: grave.grave_photo_url || "/placeholder.svg?height=160&width=160",
-    deceasedPhotoUrl: grave.deceased_photo_url || "/placeholder.svg?height=160&width=160",
-    deceased_photo_url: grave.deceased_photo_url, // Voor de edit form
-    location: {
-      latitude: grave.location_latitude || 0,
-      longitude: grave.location_longitude || 0,
-      description: grave.location_description || "Onbekende locatie",
-    },
-    memories: [], // Herinneringen worden hier niet geladen
-  }
+  const updateGraveWithId = updateGrave.bind(null, params.id)
+  const deleteGraveWithId = deleteGrave.bind(null, params.id)
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-gray-100 dark:bg-gray-900 py-8">
-      <div className="container mx-auto px-4 md:px-6 lg:px-8">
-        <EditGraveForm initialData={formattedGrave} />
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle>Graf Bewerken</CardTitle>
+            <CardDescription>Bewerk de informatie van dit graf</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form action={updateGraveWithId} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Volledige naam *</Label>
+                  <Input id="name" name="name" required defaultValue={grave.name} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="birth_date">Geboortedatum</Label>
+                  <Input id="birth_date" name="birth_date" type="date" defaultValue={grave.birth_date || ""} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="death_date">Overlijdensdatum</Label>
+                  <Input id="death_date" name="death_date" type="date" defaultValue={grave.death_date || ""} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="grave_number">Grafnummer</Label>
+                  <Input id="grave_number" name="grave_number" defaultValue={grave.grave_number || ""} />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cemetery_name">Begraafplaats naam *</Label>
+                <Input id="cemetery_name" name="cemetery_name" required defaultValue={grave.cemetery_name} />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cemetery_location">Locatie begraafplaats *</Label>
+                <Input
+                  id="cemetery_location"
+                  name="cemetery_location"
+                  required
+                  defaultValue={grave.cemetery_location}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Beschrijving</Label>
+                <Textarea id="description" name="description" defaultValue={grave.description || ""} rows={4} />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="share_on_twitter"
+                  name="share_on_twitter"
+                  defaultChecked={grave.share_on_twitter || false}
+                />
+                <Label htmlFor="share_on_twitter" className="text-sm">
+                  Deel dit graf op sociale media (optioneel)
+                </Label>
+              </div>
+
+              <div className="flex gap-4">
+                <Button type="submit" className="flex-1">
+                  Wijzigingen Opslaan
+                </Button>
+                <Button type="button" variant="outline" onClick={() => window.history.back()}>
+                  Annuleren
+                </Button>
+              </div>
+            </form>
+
+            <div className="mt-8 pt-8 border-t">
+              <form action={deleteGraveWithId}>
+                <Button type="submit" variant="destructive" className="w-full">
+                  Graf Verwijderen
+                </Button>
+              </form>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </main>
+    </div>
   )
 }

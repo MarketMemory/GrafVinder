@@ -1,30 +1,35 @@
 # GrafVinder
 
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+Een platform voor het vinden en beheren van graven in Nederland.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/marketmemorys-projects/graf-vinder)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/jvwisxzuzwm)
+## Features
 
-## Overview
+- Zoeken naar graven
+- Graf informatie toevoegen
+- Herinneringen delen
+- Gebruikersauthenticatie via Supabase
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+## Tech Stack
 
-## Deployment
+- Next.js 14 (App Router)
+- TypeScript
+- Tailwind CSS
+- Supabase (Database & Auth)
+- Vercel (Deployment)
 
-Your project is live at:
+## Development
 
-**[https://vercel.com/marketmemorys-projects/graf-vinder](https://vercel.com/marketmemorys-projects/graf-vinder)**
+\`\`\`bash
+npm install
+npm run dev
+\`\`\`
 
-## Build your app
+Open [http://localhost:3000](http://localhost:3000) in je browser.
 
-Continue building your app on:
+## Environment Variables
 
-**[https://v0.dev/chat/projects/jvwisxzuzwm](https://v0.dev/chat/projects/jvwisxzuzwm)**
-
-## How It Works
-
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+\`\`\`
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+NEXT_PUBLIC_SITE_URL=https://grafvinder.vercel.app

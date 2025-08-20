@@ -3,108 +3,182 @@
 import { createClient } from "@/lib/supabase"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import type { Database } from "@/lib/database.types"
 
-// Functie om een graf te updaten
-export async function updateGrave(formData: FormData) {
+type Grave = Database["public"]["Tables"]["graves"]["Row"]
+type GraveInsert = Database["public"]["Tables"]["graves"]["Insert"]
+type GraveUpdate = Database["public"]["Tables"]["graves"]["Update"]
+
+export async function createGrave(formData: FormData) {
   const supabase = createClient()
 
+  // Check if user is authenticated
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect("/auth") // Stuur door als niet ingelogd
-  }
-
-  const graveId = formData.get("id") as string
-  const name = formData.get("name") as string
-  const birthDate = formData.get("birthDate") as string
-  const deathDate = formData.get("deathDate") as string
-  const biography = formData.get("biography") as string
-  const locationDescription = formData.get("locationDescription") as string
-  const gravePhotoFile = formData.get("gravePhoto") as File
-  const deceasedPhotoFile = formData.get("deceasedPhoto") as File
-  const existingGravePhotoUrl = formData.get("existingGravePhotoUrl") as string | null
-  const existingDeceasedPhotoUrl = formData.get("existingDeceasedPhotoUrl") as string | null
-
-  let gravePhotoUrl: string | null = existingGravePhotoUrl
-  let deceasedPhotoUrl: string | null = existingDeceasedPhotoUrl
-
-  try {
-    // Upload nieuwe grafoto indien aanwezig
-    if (gravePhotoFile && gravePhotoFile.size > 0) {
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("grave-photos")
-        .upload(`${user.id}/${Date.now()}-${gravePhotoFile.name}`, gravePhotoFile, {
-          cacheControl: "3600",
-          upsert: false,
-        })
-      if (uploadError) throw uploadError
-      gravePhotoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/grave-photos/${uploadData.path}`
-    }
-
-    // Upload nieuwe overledene foto indien aanwezig
-    if (deceasedPhotoFile && deceasedPhotoFile.size > 0) {
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("deceased-photos")
-        .upload(`${user.id}/${Date.now()}-${deceasedPhotoFile.name}`, deceasedPhotoFile, {
-          cacheControl: "3600",
-          upsert: false,
-        })
-      if (uploadError) throw uploadError
-      deceasedPhotoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/deceased-photos/${uploadData.path}`
-    }
-
-    // Update grafgegevens in de database
-    const { error: updateError } = await supabase
-      .from("graves")
-      .update({
-        name,
-        birth_date: birthDate,
-        death_date: deathDate,
-        biography,
-        grave_photo_url: gravePhotoUrl,
-        deceased_photo_url: deceasedPhotoUrl,
-        location_description: locationDescription,
-      })
-      .eq("id", graveId)
-      .eq("user_id", user.id) // Zorg ervoor dat alleen de eigenaar kan updaten
-
-    if (updateError) throw updateError
-
-    revalidatePath("/my-graves") // Herlaad de 'Mijn Graven' pagina om de wijzigingen te tonen
-    revalidatePath(`/graves/${graveId}`) // Herlaad ook de publieke detailpagina
-    return { success: true, message: "Graf succesvol bijgewerkt!" }
-  } catch (error: any) {
-    console.error("Fout bij bijwerken graf:", error)
-    return { success: false, message: error.message || "Er is een onbekende fout opgetreden bij het bijwerken." }
-  }
-}
-
-// Functie om een graf te verwijderen (voor toekomstige stap)
-export async function deleteGrave(graveId: string) {
-  const supabase = createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
+  if (authError || !user) {
     redirect("/auth")
   }
 
-  try {
-    const { error } = await supabase.from("graves").delete().eq("id", graveId).eq("user_id", user.id)
-
-    if (error) throw error
-
-    revalidatePath("/my-graves")
-    return { success: true, message: "Graf succesvol verwijderd." }
-  } catch (error: any) {
-    console.error("Fout bij verwijderen graf:", error)
-    return { success: false, message: error.message || "Er is een onbekende fout opgetreden bij het verwijderen." }
+  const graveData: GraveInsert = {
+    name: formData.get("name") as string,
+    birth_date: formData.get("birth_date") as string,
+    death_date: formData.get("death_date") as string,
+    cemetery_name: formData.get("cemetery_name") as string,
+    cemetery_location: formData.get("cemetery_location") as string,
+    grave_number: formData.get("grave_number") as string,
+    description: formData.get("description") as string,
+    created_by: user.id,
+    share_on_twitter: formData.get("share_on_twitter") === "on",
   }
+
+  const { data, error } = await supabase.from("graves").insert(graveData).select().single()
+
+  if (error) {
+    throw new Error(`Failed to create grave: ${error.message}`)
+  }
+
+  revalidatePath("/graves")
+  revalidatePath("/my-graves")
+  redirect(`/graves/${data.id}`)
 }
 
-// De updateMemory functie is verplaatst naar components/edit-memory-form.tsx
-// export async function updateMemory(...) { ... }
+export async function updateGrave(id: string, formData: FormData) {
+  const supabase = createClient()
+
+  // Check if user is authenticated
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    redirect("/auth")
+  }
+
+  const graveData: GraveUpdate = {
+    name: formData.get("name") as string,
+    birth_date: formData.get("birth_date") as string,
+    death_date: formData.get("death_date") as string,
+    cemetery_name: formData.get("cemetery_name") as string,
+    cemetery_location: formData.get("cemetery_location") as string,
+    grave_number: formData.get("grave_number") as string,
+    description: formData.get("description") as string,
+    share_on_twitter: formData.get("share_on_twitter") === "on",
+  }
+
+  const { error } = await supabase.from("graves").update(graveData).eq("id", id).eq("created_by", user.id)
+
+  if (error) {
+    throw new Error(`Failed to update grave: ${error.message}`)
+  }
+
+  revalidatePath("/graves")
+  revalidatePath("/my-graves")
+  revalidatePath(`/graves/${id}`)
+  redirect(`/graves/${id}`)
+}
+
+export async function deleteGrave(id: string) {
+  const supabase = createClient()
+
+  // Check if user is authenticated
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    redirect("/auth")
+  }
+
+  const { error } = await supabase.from("graves").delete().eq("id", id).eq("created_by", user.id)
+
+  if (error) {
+    throw new Error(`Failed to delete grave: ${error.message}`)
+  }
+
+  revalidatePath("/graves")
+  revalidatePath("/my-graves")
+  redirect("/my-graves")
+}
+
+export async function addMemory(graveId: string, formData: FormData) {
+  const supabase = createClient()
+
+  // Check if user is authenticated
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    redirect("/auth")
+  }
+
+  const memoryData = {
+    grave_id: graveId,
+    content: formData.get("content") as string,
+    author_name: formData.get("author_name") as string,
+    created_by: user.id,
+  }
+
+  const { error } = await supabase.from("memories").insert(memoryData)
+
+  if (error) {
+    throw new Error(`Failed to add memory: ${error.message}`)
+  }
+
+  revalidatePath(`/graves/${graveId}`)
+}
+
+export async function updateMemory(memoryId: string, formData: FormData) {
+  const supabase = createClient()
+
+  // Check if user is authenticated
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    redirect("/auth")
+  }
+
+  const memoryData = {
+    content: formData.get("content") as string,
+    author_name: formData.get("author_name") as string,
+  }
+
+  const { error } = await supabase.from("memories").update(memoryData).eq("id", memoryId).eq("created_by", user.id)
+
+  if (error) {
+    throw new Error(`Failed to update memory: ${error.message}`)
+  }
+
+  revalidatePath(`/graves/*`)
+}
+
+export async function deleteMemory(memoryId: string, graveId: string) {
+  const supabase = createClient()
+
+  // Check if user is authenticated
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    redirect("/auth")
+  }
+
+  const { error } = await supabase.from("memories").delete().eq("id", memoryId).eq("created_by", user.id)
+
+  if (error) {
+    throw new Error(`Failed to delete memory: ${error.message}`)
+  }
+
+  revalidatePath(`/graves/${graveId}`)
+}

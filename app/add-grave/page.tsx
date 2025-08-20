@@ -1,21 +1,21 @@
 "use client"
 
 import type React from "react"
-
-import { useState, useEffect } from "react"
-import { createBrowserClient } from "@/lib/supabase-browser"
+import { createClient } from "@/lib/supabase"
+import { redirect } from "next/navigation"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { AlertCircle, CheckCircle } from "lucide-react"
-import { Checkbox } from "@/components/ui/checkbox" // Importeer Checkbox
 
-export default function AddGravePage() {
-  const supabase = createBrowserClient()
+export default async function AddGravePage() {
+  const supabase = createClient()
   const router = useRouter()
   const { toast } = useToast()
   const [supabaseInitialized, setSupabaseInitialized] = useState(false)
@@ -27,11 +27,10 @@ export default function AddGravePage() {
   const [gravePhoto, setGravePhoto] = useState<File | null>(null)
   const [deceasedPhoto, setDeceasedPhoto] = useState<File | null>(null)
   const [locationDescription, setLocationDescription] = useState("")
-  const [shareOnTwitter, setShareOnTwitter] = useState(false) // NIEUW: state voor de checkbox
+  const [shareOnTwitter, setShareOnTwitter] = useState(false)
   const [loading, setLoading] = useState(false)
   const [debugInfo, setDebugInfo] = useState<string[]>([])
 
-  // Debug functie om stappen te loggen
   const addDebugInfo = (message: string) => {
     console.log(`[DEBUG] ${message}`)
     setDebugInfo((prev) => [...prev, `${new Date().toLocaleTimeString()}: ${message}`])
@@ -170,7 +169,7 @@ export default function AddGravePage() {
         deceased_photo_url: deceasedPhotoUrl,
         location_description: locationDescription || null,
         user_id: user.id,
-        share_on_twitter: shareOnTwitter, // NIEUW: voeg de checkbox waarde toe
+        share_on_twitter: shareOnTwitter,
       }
 
       addDebugInfo(`Grafgegevens: ${JSON.stringify(graveData, null, 2)}`)
@@ -207,136 +206,124 @@ export default function AddGravePage() {
     }
   }
 
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser()
+
+  if (error || !user) {
+    redirect("/auth")
+  }
+
   return (
-    <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8">
-      <Card className="max-w-2xl mx-auto shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Voeg een nieuw graf toe aan GrafVinder</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="grid gap-6">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Naam overledene *</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="birthDate">Geboortedatum *</Label>
-                <Input
-                  id="birthDate"
-                  type="date"
-                  value={birthDate}
-                  onChange={(e) => setBirthDate(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="deathDate">Overlijdensdatum *</Label>
-                <Input
-                  id="deathDate"
-                  type="date"
-                  value={deathDate}
-                  onChange={(e) => setDeathDate(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="biography">Levensverhaal</Label>
-              <Textarea
-                id="biography"
-                value={biography}
-                onChange={(e) => setBiography(e.target.value)}
-                rows={5}
-                placeholder="Vertel het levensverhaal van de overledene..."
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="locationDescription">Locatie van het graf (beschrijving)</Label>
-              <Input
-                id="locationDescription"
-                value={locationDescription}
-                onChange={(e) => setLocationDescription(e.target.value)}
-                placeholder="Bijv. Begraafplaats Rusthof, Vak C, Rij 12, Graf 5"
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="gravePhoto">Foto van het graf</Label>
-                <Input
-                  id="gravePhoto"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileChange(e, setGravePhoto)}
-                />
-                {gravePhoto && <p className="text-sm text-gray-500">{gravePhoto.name}</p>}
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="deceasedPhoto">Foto van de overledene</Label>
-                <Input
-                  id="deceasedPhoto"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileChange(e, setDeceasedPhoto)}
-                />
-                {deceasedPhoto && <p className="text-sm text-gray-500">{deceasedPhoto.name}</p>}
-              </div>
-            </div>
-
-            {/* NIEUW: Checkbox voor delen op X/Twitter */}
-            <div className="flex items-center space-x-2 mt-4">
-              <Checkbox
-                id="shareOnTwitter"
-                checked={shareOnTwitter}
-                onCheckedChange={(checked) => setShareOnTwitter(checked as boolean)}
-                disabled={loading}
-              />
-              <Label
-                htmlFor="shareOnTwitter"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Toon op de tijdlijn van @GrafVinder (optioneel)
-              </Label>
-            </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Door dit aan te vinken, geef je toestemming dat GrafVinder dit graf handmatig kan delen op de officiële
-              X/Twitter tijdlijn.
-            </p>
-
-            <Button type="submit" disabled={loading || !supabaseInitialized}>
-              {loading ? (
-                <>
-                  <AlertCircle className="w-4 h-4 mr-2 animate-spin" />
-                  Bezig met toevoegen...
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Graf toevoegen
-                </>
-              )}
-            </Button>
-          </form>
-
-          {/* Debug informatie (alleen zichtbaar tijdens development) */}
-          {process.env.NODE_ENV === "development" && debugInfo.length > 0 && (
-            <Card className="mt-6 bg-gray-50 dark:bg-gray-800">
-              <CardHeader>
-                <CardTitle className="text-sm">Debug Informatie</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-xs space-y-1 max-h-40 overflow-y-auto">
-                  {debugInfo.map((info, index) => (
-                    <div key={index} className="font-mono text-gray-600 dark:text-gray-400">
-                      {info}
-                    </div>
-                  ))}
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle>Graf Toevoegen</CardTitle>
+            <CardDescription>Voeg informatie toe over een graf om anderen te helpen</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Volledige naam *</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    placeholder="Voor- en achternaam"
+                  />
                 </div>
-              </CardContent>
-            </Card>
-          )}
-        </CardContent>
-      </Card>
+                <div className="space-y-2">
+                  <Label htmlFor="birth_date">Geboortedatum</Label>
+                  <Input id="birth_date" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="death_date">Overlijdensdatum</Label>
+                  <Input id="death_date" type="date" value={deathDate} onChange={(e) => setDeathDate(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="grave_number">Grafnummer</Label>
+                  <Input id="grave_number" placeholder="bijv. A-123" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cemetery_name">Begraafplaats naam *</Label>
+                <Input id="cemetery_name" required placeholder="Naam van de begraafplaats" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cemetery_location">Locatie begraafplaats *</Label>
+                <Input id="cemetery_location" required placeholder="Stad, provincie" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Beschrijving</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Aanvullende informatie, herinneringen, of bijzonderheden..."
+                  rows={4}
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="share_on_twitter"
+                  checked={shareOnTwitter}
+                  onCheckedChange={(checked) => setShareOnTwitter(checked as boolean)}
+                  disabled={loading}
+                />
+                <Label htmlFor="share_on_twitter" className="text-sm">
+                  Deel dit graf op sociale media (optioneel)
+                </Label>
+              </div>
+
+              <div className="flex gap-4">
+                <Button type="submit" className="flex-1">
+                  {loading ? (
+                    <>
+                      <AlertCircle className="w-4 h-4 mr-2 animate-spin" />
+                      Bezig met toevoegen...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Graf Toevoegen
+                    </>
+                  )}
+                </Button>
+                <Button type="button" variant="outline" onClick={() => window.history.back()}>
+                  Annuleren
+                </Button>
+              </div>
+            </form>
+
+            {/* Debug informatie (alleen zichtbaar tijdens development) */}
+            {process.env.NODE_ENV === "development" && debugInfo.length > 0 && (
+              <Card className="mt-6 bg-gray-50 dark:bg-gray-800">
+                <CardHeader>
+                  <CardTitle className="text-sm">Debug Informatie</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-xs space-y-1 max-h-40 overflow-y-auto">
+                    {debugInfo.map((info, index) => (
+                      <div key={index} className="font-mono text-gray-600 dark:text-gray-400">
+                        {info}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
