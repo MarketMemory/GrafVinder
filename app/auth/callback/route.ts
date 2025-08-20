@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get("next") ?? "/"
 
   console.log("[AUTH CALLBACK] Code present:", !!code)
-  console.log("[AUTH CALLBACK] Next parameter:", next)
+  console.log("[AUTH CALLBACK] Next URL:", next)
 
   if (code) {
     const supabase = createClient()
@@ -23,10 +23,10 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(`${origin}/auth?error=Could not authenticate user`)
       }
 
-      console.log("[AUTH CALLBACK] Session created successfully for user:", data.user?.email)
+      console.log("[AUTH CALLBACK] Successfully authenticated user:", data.user?.email)
 
-      // Successful authentication, redirect to the next page
-      const redirectUrl = `${origin}${next}`
+      // Successful authentication, redirect to the next URL
+      const redirectUrl = next.startsWith("/") ? `${origin}${next}` : `${origin}/`
       console.log("[AUTH CALLBACK] Redirecting to:", redirectUrl)
 
       return NextResponse.redirect(redirectUrl)
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${origin}/auth?error=Authentication failed`)
     }
   } else {
-    console.error("[AUTH CALLBACK] No code parameter found")
+    console.error("[AUTH CALLBACK] No code provided in callback")
     return NextResponse.redirect(`${origin}/auth?error=No authentication code provided`)
   }
 }
