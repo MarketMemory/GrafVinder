@@ -10,7 +10,7 @@ import { ToasterProvider } from "@/hooks/use-toast"
 const inter = Inter({ subsets: ["latin"] })
 
 // Gebruik process.env.NEXT_PUBLIC_SITE_URL voor de canonical URL
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://grafvinder.vercel.app/"
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://grafvinder.vercel.app"
 
 export const metadata: Metadata = {
   title: "GrafVinder - Vind eenvoudig graven in Nederland",
